@@ -1,81 +1,91 @@
 # ForestWatch AI
 
-**Neural Storm 2026 · Green Planet · GP-04: Illegal Deforestation Detection**
+**Neural Storm 2026 · GP-04 — Illegal Deforestation Detection**  
+**Pilot geography:** Western Ghats, India
 
-ForestWatch AI is an evidence-first prototype for screening satellite observations for possible forest disturbance. The intended pilot region is the Western Ghats, India.
+ForestWatch AI is an evidence-first satellite screening prototype. It combines seasonally comparable Sentinel-2 vegetation observations, Sentinel-1 radar context, a historical tree-cover reference and a separate forest-loss cross-check to produce a shortlist of locations for human review.
 
-> **Important:** A satellite-observed change is not proof of illegal deforestation. ForestWatch is designed to identify candidate areas for human review and show the evidence and uncertainty behind each flag.
+> **Important:** A candidate flag is not confirmation of deforestation, natural-forest loss or illegal activity. Satellite change can result from harvesting, fire, storms, landslides, disease, seasonal effects or other land management. The system does not identify a responsible party or make legal conclusions.
 
-## Problem
+## What is implemented
 
-Forest landscapes can change for many reasons, including land clearing, fire, storms, landslides, disease, seasonal vegetation cycles and normal land management. A useful monitoring workflow must do more than compare two images: it should account for observation quality, seasonality and alternative explanations.
+The main working workflow is in [`notebooks/forestwatch_pipeline_v2.ipynb`](notebooks/forestwatch_pipeline_v2.ipynb), designed to run in Google Colab with Google Earth Engine access.
 
-## Proposed approach
+1. Authenticate to Earth Engine and check Sentinel-2 data access.
+2. Create seasonally comparable optical composites and calculate NDVI change.
+3. Screen for persistent vegetation decline across 2023, 2024 and 2025.
+4. Add Sentinel-1 VV/VH radar observations as complementary context.
+5. Intersect persistent candidates with ESA WorldCover 2021 tree-cover class 10.
+6. Group connected pixels into regions (minimum mapped area 0.1 ha) and measure regional optical/radar evidence.
+7. Cross-check the 20 highest-ranked regions with Hansen Global Forest Change 2025 v1.13.
+8. Export the top 20 regions as CSV and GeoJSON to Google Drive.
 
-1. Use Sentinel-2 optical observations to examine vegetation change.
-2. Apply cloud and scene-quality screening before comparison.
-3. Compare observations from seasonally comparable periods.
-4. Add Sentinel-1 radar observations as complementary evidence where practical.
-5. Group notable changes into candidate areas for review.
-6. Present dates, location, indicators, data quality and known limitations alongside each candidate.
+## Pilot run: observed outputs
 
-The project will distinguish **evidence quality** from **investigation priority**. Any scoring method will be documented and evaluated; it will not be presented as a legal determination.
+The following values are from the pilot notebook execution outputs recorded during development. They describe screening results, not independently verified forest loss.
 
-## Technology
+| Indicator | Observed pilot output |
+|---|---:|
+| Persistent candidate area (2023–2025 optical screen) | approximately 485.92 ha |
+| Candidate area overlapping ESA WorldCover 2021 tree-cover class | approximately 413.12 ha |
+| Persistent candidate area overlapping that tree-cover class | approximately 85.02% |
+| Connected tree-cover-overlap regions of at least 0.1 ha | 790 |
+| Largest region in the Section 11 shortlist | approximately 21.45 ha |
+| Regions examined in the top-ranked shortlist | 20 |
 
-- Python
-- Google Earth Engine
-- Streamlit
-- NumPy and Pandas
-- Matplotlib
+For the top 20 regions, radar coverage was reported separately from radar support; coverage was 100% in the recorded Section 11 output, while radar support varied by region. These indicators are not an accuracy score. Hansen cross-check results should be read from the notebook's Section 12 output for the exact run; this README does not infer values that are not recorded here.
 
-Additional geospatial or machine-learning libraries will be added only when the implementation needs them.
+## Data sources
 
-## Current status
+- **Sentinel-2 Surface Reflectance Harmonized** — optical observations and NDVI.
+- **Sentinel-1 GRD** — VV/VH radar observations used as supporting context.
+- **ESA WorldCover 2021 v200** — class 10 (tree cover) used as a historical land-cover reference.
+- **Hansen/UMD Global Forest Change 2025 v1.13** — independent, approximately 30 m tree-cover-loss cross-check for 2021–2025.
 
-This repository currently contains the initial dashboard shell and project documentation. The satellite processing pipeline, candidate detection, validation and live map are **not implemented yet**. No detection results or model-accuracy claims are being reported at this stage.
+Dataset definitions, resolutions and limitations are described in the notebook and in [the reproducibility guide](docs/reproducibility.md).
 
-## Run locally
+## Run the workflow
 
-1. Install Python 3.10 or newer.
-2. Clone this repository.
-3. Install dependencies:
+1. Open the [ForestWatch pipeline notebook](notebooks/forestwatch_pipeline_v2.ipynb) in Google Colab.
+2. Use a Google account with access to Google Earth Engine.
+3. In Section 2, confirm that `PROJECT_ID` matches your registered Earth Engine Cloud project (the development project is `forestwatch-ai-2026`).
+4. Run the notebook sections in order in one runtime. In particular, Section 11 creates `ranked_regions`, which Sections 12 and 13 use.
+5. Complete the Earth Engine authentication prompts when asked.
+6. Run Section 13 and monitor both export tasks in the Earth Engine Tasks panel. The CSV and GeoJSON files are written to the `ForestWatchAI` folder in Google Drive.
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run order and troubleshooting notes.
 
-4. Start the dashboard:
+## Architecture
 
-   ```bash
-   streamlit run app.py
-   ```
+See [docs/architecture.md](docs/architecture.md) for the processing flow and the role of each evidence source.
 
-The initial dashboard shell can be opened without Earth Engine credentials. Satellite analysis will require a separately authenticated Earth Engine account and project.
+## Evaluation status
 
-## Evaluation plan
+This prototype has produced candidate regions and supporting indicators, but it has **not** been evaluated against a verified ground-truth dataset. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A proper evaluation requires independent reference labels and a geographically and temporally representative test set.
 
-When suitable reference labels are available, the project will report relevant measures such as precision, recall and F1-score, and will document the geographic and temporal limits of the evaluation. Results will not be invented or estimated without running the evaluation.
+## Limitations and responsible interpretation
 
-## AI tools used
+- The pilot AOI is a screening area, not a complete Western Ghats monitoring boundary.
+- Optical composites can be affected by clouds, haze, shadows, phenology and seasonal variation.
+- Radar backscatter changes are ambiguous and are treated as supporting context, not proof.
+- ESA WorldCover 2021 is a historical land-cover reference; its tree-cover class does not establish natural-forest status.
+- Hansen Global Forest Change is a coarser product and its loss flag does not explain the cause of disturbance.
+- Small candidate polygons may contain very few 30 m Hansen pixels, making regional percentages approximate.
+- Candidate area is not equivalent to confirmed deforested area.
+- Human review, local context and authoritative reference data are required before any operational or enforcement decision.
 
-ChatGPT is being used for planning, code assistance, debugging and documentation. The implementation and results will be checked against the actual data and execution output.
+## Tools and assistance
 
-## Limitations
+Python, Google Colab, Google Earth Engine, Sentinel-2, Sentinel-1, ESA WorldCover and Hansen Global Forest Change are used in the current notebook workflow. ChatGPT assisted with planning, code development, debugging and documentation; reported outputs are taken from the development run rather than presented as independently audited results.
 
-- Optical imagery can be affected by clouds, haze and shadows.
-- Radar data provides complementary information but requires careful interpretation.
-- Seasonal differences can look like disturbance if comparison periods are poorly chosen.
-- A detected change does not establish its cause, legality or responsible party.
-- Human review and reliable reference data are necessary.
-
-## Project structure
+## Repository layout
 
 ```text
 ForestWatch-AI/
-├── app.py
-├── requirements.txt
+├── notebooks/
+│   └── forestwatch_pipeline_v2.ipynb
+├── docs/
+│   ├── architecture.md
+│   └── reproducibility.md
 └── README.md
 ```
-
-More modules will be added as working components are implemented and tested.
