@@ -83,7 +83,7 @@ evidence_columns = [
 with st.sidebar:
     st.header("Review data")
     uploaded = st.file_uploader(
-        "Upload latest Section 13 CSV (optional)", type=["csv"]
+        "Upload Section 13 CSV with Hansen results (optional)", type=["csv"]
     )
     st.caption(
         "Without an upload, the dashboard uses the committed Section 11 pilot snapshot."
@@ -302,6 +302,7 @@ st.map(
 st.subheader("Largest review candidates")
 display_columns = [
     "review_rank",
+    "region_id",
     "area_ha",
     "latitude",
     "longitude",
@@ -322,6 +323,7 @@ display = view_df[available_display_columns].copy()
 display = display.rename(
     columns={
         "review_rank": "Rank",
+        "region_id": "Region ID (this run)",
         "area_ha": "Area (ha)",
         "latitude": "Latitude",
         "longitude": "Longitude",
