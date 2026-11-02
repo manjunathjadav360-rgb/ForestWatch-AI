@@ -86,7 +86,7 @@ Use [`docs/run_record_template.md`](docs/run_record_template.md) to record each 
 
 ## Automated repository checks
 
-A GitHub Actions workflow checks dashboard Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates and radar-share ranges.
+A GitHub Actions workflow runs a Streamlit dashboard startup smoke test, checks dashboard Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates, descending area order and radar-share ranges.
 
 ## Evaluation status
 
