@@ -55,6 +55,19 @@ Dataset definitions, resolutions and limitations are described in the notebook a
 
 See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run order and troubleshooting notes.
 
+## Judge-facing results dashboard
+
+The Streamlit dashboard reads the real CSV exported by notebook Section 13. It displays candidate centroids on a map, summary indicators and the ranked evidence table. It intentionally does not ship fabricated sample detections.
+
+Run locally:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The map displays region centroids (not polygon boundaries). The GeoJSON export can be used separately in a GIS viewer for polygon inspection.
+
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the processing flow and the role of each evidence source.
