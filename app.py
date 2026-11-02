@@ -122,6 +122,14 @@ df = df.loc[
     :
 ].dropna(subset=required_columns).copy()
 
+# Evidence shares are fractions, so values outside [0, 1] are invalid.
+invalid_share_counts = {}
+for column in ["radar_support_share", "radar_coverage_share"]:
+    if column in df.columns:
+        invalid = df[column].notna() & ~df[column].between(0, 1)
+        invalid_share_counts[column] = int(invalid.sum())
+        df.loc[invalid, column] = float("nan")
+
 removed_rows = original_rows - len(df)
 if df.empty:
     st.warning("No valid candidate rows remain after checking coordinates and area.")
@@ -139,6 +147,13 @@ else:
 if removed_rows:
     st.warning(
         f"{removed_rows} of {original_rows} rows were excluded because their coordinates or mapped area were invalid."
+    )
+
+invalid_share_total = sum(invalid_share_counts.values())
+if invalid_share_total:
+    st.warning(
+        f"{invalid_share_total} radar-share value(s) were outside the valid 0–1 range "
+        "and are omitted from the corresponding summaries."
     )
 
 with st.sidebar:
@@ -199,14 +214,15 @@ st.caption(
 )
 map_df = view_df[["latitude", "longitude", "area_ha"]].copy()
 max_area = max(float(map_df["area_ha"].max()), 0.01)
-map_df["marker_size_m"] = map_df["area_ha"].apply(
-    lambda value: 350 + 1650 * math.sqrt(max(float(value), 0) / max_area)
+# Streamlit map marker sizes are pixel-scale values; keep the range readable.
+map_df["marker_size_px"] = map_df["area_ha"].apply(
+    lambda value: 8 + 20 * math.sqrt(max(float(value), 0) / max_area)
 )
 st.map(
     map_df,
     latitude="latitude",
     longitude="longitude",
-    size="marker_size_m",
+    size="marker_size_px",
     zoom=8,
     use_container_width=True,
 )
