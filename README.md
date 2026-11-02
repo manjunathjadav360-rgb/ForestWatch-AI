@@ -33,7 +33,7 @@ The following values are from the pilot notebook execution outputs recorded duri
 | Largest region in the Section 11 shortlist | approximately 21.45 ha |
 | Regions examined in the top-ranked shortlist | 20 |
 
-For the top 20 regions, radar coverage was reported separately from radar support; coverage was 100% in the recorded Section 11 output, while radar support varied by region. These indicators are not an accuracy score. Hansen cross-check results should be read from the notebook's Section 12 output for the exact run; this README does not infer values that are not recorded here.
+For the top 20 regions, radar coverage was reported separately from radar support; coverage was 100% in the recorded Section 11 output, while radar support varied by region. Radar support is calculated among pixels with valid radar observations; radar coverage is reported separately. These indicators are not an accuracy score. Section 12 reports Hansen loss-pixel fractions and approximate pixel-area sums within the shortlist geometries; read the output from the actual run rather than inferring unrecorded values.
 
 ## Data sources
 
@@ -82,7 +82,7 @@ See [docs/architecture.md](docs/architecture.md) for the processing flow and the
 
 ## Automated repository checks
 
-A GitHub Actions workflow checks dashboard Python syntax and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates and radar-share ranges.
+A GitHub Actions workflow checks dashboard Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates and radar-share ranges.
 
 ## Evaluation status
 
