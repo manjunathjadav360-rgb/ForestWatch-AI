@@ -57,7 +57,9 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 ## Judge-facing results dashboard
 
-The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot. The map displays candidate centroids, not polygon boundaries.
+The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot.
+
+The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates and positive area values, and provides a CSV download of the currently displayed shortlist. Its summary metrics recalculate for the selected rows. Marker locations are centroids, not polygon boundaries.
 
 Run locally:
 
@@ -66,7 +68,9 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-To use the latest run, upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The top-20 area metric is the sum of the shortlisted regions only, not the total pilot candidate area. The GeoJSON export can be used separately in a GIS viewer for polygon inspection.
+To use the latest run, upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
+
+**Hansen cross-check status:** Section 12 calculates the independent Hansen Global Forest Change cross-check in the notebook. Those results are not currently merged into the dashboard snapshot, so the dashboard does not display Hansen statistics. Do not interpret the Section 11 dashboard as showing Section 12 verification.
 
 ## Judge demo
 
