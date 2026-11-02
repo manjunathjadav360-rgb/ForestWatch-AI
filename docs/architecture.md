@@ -16,10 +16,11 @@ flowchart TD
     H --> K[Regional radar evidence]
     J --> L[Region-level evidence shortlist]
     K --> L
-    L --> M[Hansen Global Forest Change cross-check]
-    M --> N[Top 20 review candidates]
-    N --> O[CSV and GeoJSON exports to Google Drive]
-    O --> P[Human review and independent verification]
+    L --> M[Rank candidate regions by area for review]
+    M --> N[Top 20 shortlist]
+    N --> O[Hansen Global Forest Change cross-check]
+    O --> P[CSV and GeoJSON exports to Google Drive]
+    P --> Q[Human review and independent verification]
 ```
 
 ## Components and responsibilities
