@@ -37,11 +37,11 @@ Optical NDVI provides a vegetation-condition signal but can be affected by cloud
 
 ## 8. What does radar coverage mean, and how is it different from radar support?
 
-Coverage indicates the share of a region with usable radar observations. Support indicates the share meeting the pipeline's radar-support condition. A region can have full coverage but only a small share of pixels showing supporting change.
+Coverage indicates the share of a region with usable radar observations. Support indicates the share of radar-observed pixels meeting the pipeline's exploratory radar-support condition; pixels without observations are excluded from the support denominator. A region can have full coverage but only a small share of observed pixels showing supporting change.
 
 ## 9. Why use ESA WorldCover and Hansen Global Forest Change?
 
-WorldCover provides a historical tree-cover class reference to help focus review on areas mapped as tree cover. Hansen provides a separate, coarser loss-year reference. Neither dataset proves natural-forest status, the cause of change or illegality.
+WorldCover provides a historical tree-cover class reference to help focus review on areas mapped as tree cover. Hansen provides a separate, coarser loss-year reference. Section 12 sums the mapped Hansen pixel area intersecting candidate geometries and reports per-region loss-pixel fractions. These are approximate cross-check measures, not verified deforested area. Neither dataset proves natural-forest status, the cause of change or illegality.
 
 ## 10. What are the model's accuracy, precision and recall?
 
