@@ -32,27 +32,26 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.header("Load pilot results")
-    uploaded = st.file_uploader("Upload Section 13 CSV", type=["csv"])
-    st.caption("In Colab, download forestwatch_top20_candidates.csv from Drive, then upload it here.")
+    st.header("Pilot results")
+    uploaded = st.file_uploader("Replace with latest Section 13 CSV (optional)", type=["csv"])
+    st.caption("The dashboard opens with the recorded Section 11 pilot shortlist. Upload the latest Section 13 export to replace it.")
 
-if uploaded is None:
-    st.info("Upload the CSV exported by notebook Section 13 to display the real candidate map and evidence. No sample or fabricated detections are shown.")
-    st.subheader("How to get the results file")
-    st.markdown(
-        "1. Open the ForestWatch notebook in Colab.\n"
-        "2. Run Section 13 and wait for the CSV export task to complete.\n"
-        "3. In Google Drive, open the **ForestWatchAI** folder.\n"
-        "4. Download **forestwatch_top20_candidates.csv** and upload it using the sidebar."
-    )
-    st.markdown("**Pipeline:** Sentinel-2 change → persistence screen → Sentinel-1 context → ESA WorldCover reference → regional shortlist → Hansen cross-check.")
-    st.stop()
-
+default_csv = Path(__file__).parent / "data" / "forestwatch_top20_snapshot.csv"
+source_label = "Recorded Section 11 pilot output snapshot"
 try:
-    df = pd.read_csv(uploaded)
+    if uploaded is not None:
+        df = pd.read_csv(uploaded)
+        source_label = "User-uploaded Section 13 export"
+    elif default_csv.exists():
+        df = pd.read_csv(default_csv)
+    else:
+        st.error("Pilot results file is missing.")
+        st.stop()
 except Exception as exc:
-    st.error(f"Could not read this CSV: {exc}")
+    st.error(f"Could not read the candidate data: {exc}")
     st.stop()
+
+st.caption(f"Data source: {source_label}. Upload the latest export when available.")
 
 required = [
     "area_ha", "latitude", "longitude", "ndvi_drop_2024",
@@ -119,4 +118,4 @@ st.markdown(
     "- **Area:** mapped candidate-region area, not confirmed deforested area."
 )
 st.warning("A high-ranked region is a priority for review, not proof of illegal deforestation. Inspect dated imagery and local context, then verify with authoritative reference information.")
-st.caption("ForestWatch AI · Evidence-first prototype · Results shown only from the CSV uploaded in this session")
+st.caption("ForestWatch AI · Evidence-first prototype · Recorded pilot snapshot or latest uploaded export")
