@@ -68,6 +68,10 @@ streamlit run app.py
 
 Upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The map displays region centroids (not polygon boundaries). The GeoJSON export can be used separately in a GIS viewer for polygon inspection.
 
+## Judge demo
+
+A concise 90–120 second presentation flow is in [docs/demo_script.md](docs/demo_script.md).
+
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the processing flow and the role of each evidence source.
