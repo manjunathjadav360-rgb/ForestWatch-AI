@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - "app.py"
+      - "tests/**"
+      - "requirements.txt"
       - "notebooks/**"
       - "data/forestwatch_top20_snapshot.csv"
       - ".github/workflows/validate.yml"
