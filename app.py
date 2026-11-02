@@ -296,7 +296,7 @@ st.map(
     longitude="longitude",
     size="marker_size_px",
     zoom=8,
-    use_container_width=True,
+    width="stretch",
 )
 
 st.subheader("Largest review candidates")
@@ -349,14 +349,14 @@ for column in [
 ]:
     if column in display.columns:
         display[column] = display[column] * 100
-st.dataframe(display, hide_index=True, use_container_width=True)
+st.dataframe(display, hide_index=True, width="stretch")
 
 st.download_button(
     "Download displayed shortlist (CSV)",
     data=view_df.to_csv(index=False).encode("utf-8"),
     file_name="forestwatch_review_shortlist.csv",
     mime="text/csv",
-    use_container_width=True,
+    width="stretch",
 )
 
 with st.expander("Evidence definitions and limitations"):
