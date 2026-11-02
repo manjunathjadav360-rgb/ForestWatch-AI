@@ -25,8 +25,8 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 | 8 | Multi-year persistence screen | `persistent_candidates` |
 | 9 | Region-level evidence view | Regional evidence table |
 | 10 | ESA WorldCover tree-cover reference screen | `tree_cover_persistent_candidates` |
-| 11 | Connected-region shortlist and regional metrics | `ranked_regions` |
-| 12 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions |
+| 11 | Connected-region shortlist and regional metrics | `ranked_regions`; radar support is calculated among valid radar-observed pixels, with coverage reported separately |
+| 12 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions, plus approximate Hansen pixel-area sums inside shortlist geometries |
 | 13 | CSV and GeoJSON exports | Two Earth Engine Drive export tasks |
 
 **Important dependencies:** Section 11 requires the variables produced by earlier optical/radar sections and Section 10. Sections 12 and 13 require Section 11 to have run successfully in the current runtime.
@@ -40,7 +40,7 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 5. Open Google Drive and locate the `ForestWatchAI` folder.
 6. Confirm that the CSV and GeoJSON files exist before using them in a presentation or external map.
 
-The CSV contains the top 20 region attributes selected by Section 13. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
+The CSV contains the top 20 region attributes selected by Section 13. Radar support is the fraction among observed radar pixels; radar coverage is the fraction of the region with radar observations. Section 12's Hansen-area values are separate from these CSV candidate-region areas. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
 
 ## Reproducibility notes
 
