@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install dashboard dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
       - name: Check dashboard and notebook Python syntax
         run: |
           python -m py_compile app.py
@@ -84,6 +86,10 @@ jobs:
               for key in ("radar_support_share", "radar_coverage_share"):
                   if not 0 <= values[key] <= 1:
                       raise SystemExit(f"Row {index} has invalid {key}")
+
+          areas = [float(row["area_ha"]) for row in rows]
+          if any(left < right for left, right in zip(areas, areas[1:])):
+              raise SystemExit("Pilot shortlist must be sorted by descending candidate area")
 
           print("Dashboard syntax and 20-row pilot snapshot checks passed.")
           PY
