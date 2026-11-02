@@ -12,10 +12,41 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-      .stApp { background: #f5f7f2; }
+      :root { color-scheme: light; }
+      html, body, [data-testid="stAppViewContainer"], .stApp {
+        background: #f5f7f2 !important;
+        color: #26352a !important;
+      }
       .block-container { max-width: 1200px; padding-top: 1.8rem; }
-      [data-testid="stMetric"] { background: white; padding: 14px 16px; border: 1px solid #e1e8dc; border-radius: 10px; }
-      .fw-note { background: #eef3e9; padding: 12px 16px; border-left: 4px solid #56734f; border-radius: 6px; }
+      h1, h2, h3, h4, h5, h6, p, span, label, li, strong, small,
+      [data-testid="stCaptionContainer"], [data-testid="stMarkdownContainer"],
+      [data-testid="stMetricLabel"], [data-testid="stMetricValue"],
+      [data-testid="stMetricDelta"], [data-testid="stFileUploader"] {
+        color: #26352a !important;
+      }
+      [data-testid="stSidebar"] { background: #edf2e9 !important; }
+      [data-testid="stMetric"] {
+        background: #ffffff !important;
+        padding: 14px 16px;
+        border: 1px solid #dce5d8;
+        border-radius: 10px;
+      }
+      [data-testid="stDataFrame"], [data-testid="stTable"] {
+        background: #ffffff !important;
+      }
+      .fw-note {
+        background: #e8f0e4;
+        color: #26352a !important;
+        padding: 12px 16px;
+        border-left: 4px solid #56734f;
+        border-radius: 6px;
+      }
+      .fw-note b { color: #203b27 !important; }
+      [data-testid="stAlert"] p { color: #26352a !important; }
+      @media (max-width: 640px) {
+        .block-container { padding: 1rem 0.8rem 3rem; }
+        h1 { font-size: 1.8rem !important; }
+      }
     </style>
     """,
     unsafe_allow_html=True,
