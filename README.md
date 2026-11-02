@@ -80,6 +80,10 @@ A concise 90–120 second presentation flow is in [docs/demo_script.md](docs/dem
 
 See [docs/architecture.md](docs/architecture.md) for the processing flow and the role of each evidence source.
 
+## Reproducible run records
+
+Use [`docs/run_record_template.md`](docs/run_record_template.md) to record each Earth Engine run, dataset versions, thresholds, export completion and independent review notes. Fill it only with values observed in the actual run.
+
 ## Automated repository checks
 
 A GitHub Actions workflow checks dashboard Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates and radar-share ranges.
