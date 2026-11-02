@@ -73,6 +73,10 @@ evidence_columns = [
     "ndvi_change_2025_vs_2024",
     "radar_support_share",
     "radar_coverage_share",
+    "treecover2000_pct_mean",
+    "loss_2021_2025_share_mean",
+    "loss_area_2021_2025_ha_sum",
+    *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
 ]
 
 with st.sidebar:
@@ -104,6 +108,19 @@ if missing:
     st.error("This file is missing required columns: " + ", ".join(missing))
     st.stop()
 
+hansen_required = {
+    "treecover2000_pct_mean",
+    "loss_2021_2025_share_mean",
+    "loss_area_2021_2025_ha_sum",
+}
+has_hansen = hansen_required.issubset(df.columns)
+if uploaded is not None:
+    source_label = (
+        "User-uploaded Section 13 export with Hansen cross-check"
+        if has_hansen
+        else "User-uploaded CSV without Hansen cross-check fields"
+    )
+
 original_rows = len(df)
 numeric_columns = required_columns + [
     column for column in evidence_columns if column in df.columns
@@ -123,12 +140,30 @@ df = df.loc[
 ].dropna(subset=required_columns).copy()
 
 # Evidence shares are fractions, so values outside [0, 1] are invalid.
+share_columns = [
+    "radar_support_share",
+    "radar_coverage_share",
+    "loss_2021_2025_share_mean",
+    *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
+]
 invalid_share_counts = {}
-for column in ["radar_support_share", "radar_coverage_share"]:
+for column in share_columns:
     if column in df.columns:
         invalid = df[column].notna() & ~df[column].between(0, 1)
         invalid_share_counts[column] = int(invalid.sum())
         df.loc[invalid, column] = float("nan")
+
+if "treecover2000_pct_mean" in df.columns:
+    invalid = df["treecover2000_pct_mean"].notna() & ~df["treecover2000_pct_mean"].between(0, 100)
+    if invalid.any():
+        df.loc[invalid, "treecover2000_pct_mean"] = float("nan")
+        st.warning("Invalid Hansen year-2000 canopy percentages were omitted.")
+
+if "loss_area_2021_2025_ha_sum" in df.columns:
+    invalid = df["loss_area_2021_2025_ha_sum"].notna() & df["loss_area_2021_2025_ha_sum"].lt(0)
+    if invalid.any():
+        df.loc[invalid, "loss_area_2021_2025_ha_sum"] = float("nan")
+        st.warning("Negative Hansen pixel-area values were omitted.")
 
 removed_rows = original_rows - len(df)
 if df.empty:
@@ -152,7 +187,7 @@ if removed_rows:
 invalid_share_total = sum(invalid_share_counts.values())
 if invalid_share_total:
     st.warning(
-        f"{invalid_share_total} radar-share value(s) were outside the valid 0–1 range "
+        f"{invalid_share_total} evidence-share value(s) were outside the valid 0–1 range "
         "and are omitted from the corresponding summaries."
     )
 
@@ -207,6 +242,38 @@ st.caption(
     "Radar coverage is reported separately from radar support."
 )
 
+with st.expander("Independent Hansen cross-check", expanded=has_hansen):
+    if has_hansen:
+        hansen_area = view_df["loss_area_2021_2025_ha_sum"].sum(min_count=1)
+        hansen_share = view_df["loss_2021_2025_share_mean"].mean()
+        regions_with_signal = int(
+            view_df["loss_2021_2025_share_mean"].fillna(0).gt(0).sum()
+        )
+        h1, h2, h3 = st.columns(3)
+        h1.metric(
+            "Hansen loss-pixel area",
+            "—" if pd.isna(hansen_area) else f"{hansen_area:.3f} ha",
+        )
+        h2.metric(
+            "Mean regional loss-pixel share",
+            "—" if pd.isna(hansen_share) else f"{hansen_share * 100:.2f}%",
+        )
+        h3.metric(
+            "Regions with a loss signal",
+            f"{regions_with_signal}/{len(view_df)}",
+        )
+        st.warning(
+            "These are approximate intersections of roughly 30 m Hansen loss pixels "
+            "with candidate polygons. They are not confirmed deforested hectares, "
+            "ground truth, or evidence of illegal activity."
+        )
+    else:
+        st.info(
+            "The committed pilot snapshot contains Section 11 fields only. "
+            "To display Hansen results here, run the updated notebook Sections 12 and 13, "
+            "then upload forestwatch_top20_candidates_with_hansen.csv from Google Drive."
+        )
+
 st.divider()
 st.subheader("Candidate region map")
 st.caption(
@@ -238,6 +305,10 @@ display_columns = [
     "ndvi_change_2025_vs_2024",
     "radar_support_share",
     "radar_coverage_share",
+    "treecover2000_pct_mean",
+    "loss_2021_2025_share_mean",
+    "loss_area_2021_2025_ha_sum",
+    *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
 ]
 available_display_columns = [
     column for column in display_columns if column in view_df.columns
@@ -254,9 +325,21 @@ display = display.rename(
         "ndvi_change_2025_vs_2024": "NDVI change 2025 vs 2024",
         "radar_support_share": "Radar support (%)",
         "radar_coverage_share": "Radar coverage (%)",
+        "treecover2000_pct_mean": "Hansen tree cover 2000 mean (%)",
+        "loss_2021_2025_share_mean": "Hansen loss share 2021–25 (%)",
+        "loss_area_2021_2025_ha_sum": "Hansen loss-pixel area (ha)",
+        **{
+            f"loss_{year}_share_mean": f"Hansen loss share {year} (%)"
+            for year in range(2021, 2026)
+        },
     }
 )
-for column in ["Radar support (%)", "Radar coverage (%)"]:
+for column in [
+    "Radar support (%)",
+    "Radar coverage (%)",
+    "Hansen loss share 2021–25 (%)",
+    *[f"Hansen loss share {year} (%)" for year in range(2021, 2026)],
+]:
     if column in display.columns:
         display[column] = display[column] * 100
 st.dataframe(display, hide_index=True, use_container_width=True)
