@@ -273,7 +273,7 @@ with st.expander("Evidence definitions and limitations"):
     st.markdown(
         """
         - **NDVI drop:** vegetation-index difference relative to the notebook's 2023 baseline.
-        - **Radar support:** share of regional pixels meeting the exploratory radar-support condition.
+        - **Radar support:** share of radar-observed pixels meeting the exploratory radar-support condition. Pixels without radar observations are excluded from this share.
         - **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.
         - **Candidate area:** mapped area of a region flagged by the screening workflow; it is not confirmed forest-loss area.
         - **Map markers:** centroid points only. Use the notebook's GeoJSON export to inspect candidate-region geometries.
