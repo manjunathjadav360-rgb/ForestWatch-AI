@@ -40,7 +40,7 @@ For the top 20 regions, radar coverage was reported separately from radar suppor
 - **Sentinel-2 Surface Reflectance Harmonized** — optical observations and NDVI.
 - **Sentinel-1 GRD** — VV/VH radar observations used as supporting context.
 - **ESA WorldCover 2021 v200** — class 10 (tree cover) used as a historical land-cover reference.
-- **Hansen/UMD Global Forest Change 2025 v1.13** — independent, approximately 30 m tree-cover-loss cross-check for 2021–2025.
+- **Hansen/UMD Global Forest Change 2025 v1.13** — independent, approximately 30 m tree-cover-loss cross-check for 2021–2025 ([official Earth Engine catalog](https://developers.google.com/earth-engine/datasets/catalog/UMD_hansen_global_forest_change_2025_v1_13)).
 
 Dataset definitions, resolutions and limitations are described in the notebook and in [the reproducibility guide](docs/reproducibility.md).
 
@@ -70,7 +70,7 @@ streamlit run app.py
 
 To use the latest run, upload `forestwatch_top20_candidates_with_hansen.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. This updated export includes Section 12 Hansen cross-check fields. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
 
-**Hansen cross-check status:** Section 12 calculates the independent Hansen Global Forest Change cross-check in the notebook. Those results are not currently merged into the dashboard snapshot, so the dashboard does not display Hansen statistics. Do not interpret the Section 11 dashboard as showing Section 12 verification.
+**Hansen cross-check status:** The committed dashboard snapshot is a recorded Section 11 shortlist and does not contain Hansen values. The updated Section 13 export includes the Section 12 Hansen fields; upload `forestwatch_top20_candidates_with_hansen.csv` to display the independent cross-check in the dashboard. These are approximate loss-pixel intersections, not confirmed forest loss.
 
 ## Judge demo
 
