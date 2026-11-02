@@ -1,0 +1,65 @@
+name: Validate ForestWatch prototype
+
+on:
+  push:
+    paths:
+      - "app.py"
+      - "data/forestwatch_top20_snapshot.csv"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    paths:
+      - "app.py"
+      - "data/forestwatch_top20_snapshot.csv"
+      - ".github/workflows/validate.yml"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check dashboard Python syntax
+        run: python -m py_compile app.py
+      - name: Validate committed pilot snapshot
+        run: |
+          python - <<'PY'
+          import csv
+          import math
+          from pathlib import Path
+
+          path = Path("data/forestwatch_top20_snapshot.csv")
+          required = {
+              "area_ha", "latitude", "longitude",
+              "ndvi_drop_2024", "ndvi_drop_2025",
+              "ndvi_change_2025_vs_2024",
+              "radar_support_share", "radar_coverage_share",
+          }
+          with path.open(newline="", encoding="utf-8") as handle:
+              reader = csv.DictReader(handle)
+              missing = required - set(reader.fieldnames or [])
+              if missing:
+                  raise SystemExit(f"Missing columns: {sorted(missing)}")
+              rows = list(reader)
+
+          if len(rows) != 20:
+              raise SystemExit(f"Expected 20 shortlist rows, found {len(rows)}")
+
+          for index, row in enumerate(rows, start=1):
+              values = {key: float(row[key]) for key in required}
+              if not all(math.isfinite(value) for value in values.values()):
+                  raise SystemExit(f"Row {index} contains a non-finite value")
+              if values["area_ha"] <= 0:
+                  raise SystemExit(f"Row {index} has non-positive area")
+              if not -90 <= values["latitude"] <= 90:
+                  raise SystemExit(f"Row {index} has invalid latitude")
+              if not -180 <= values["longitude"] <= 180:
+                  raise SystemExit(f"Row {index} has invalid longitude")
+              for key in ("radar_support_share", "radar_coverage_share"):
+                  if not 0 <= values[key] <= 1:
+                      raise SystemExit(f"Row {index} has invalid {key}")
+
+          print("Dashboard syntax and 20-row pilot snapshot checks passed.")
+          PY
