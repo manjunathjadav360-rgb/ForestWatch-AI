@@ -59,7 +59,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot.
 
-The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and radar-share ranges, and provides a CSV download of the currently displayed shortlist. Its summary metrics recalculate for the selected rows. Marker locations are centroids, not polygon boundaries.
+The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When an enriched Section 13 file is uploaded, the table and cross-check panel also show Hansen historical canopy, annual loss-pixel shares and approximate loss-pixel area. Marker locations are centroids, not polygon boundaries.
 
 Run locally:
 
@@ -68,7 +68,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-To use the latest run, upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
+To use the latest run, upload `forestwatch_top20_candidates_with_hansen.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. This updated export includes Section 12 Hansen cross-check fields. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
 
 **Hansen cross-check status:** Section 12 calculates the independent Hansen Global Forest Change cross-check in the notebook. Those results are not currently merged into the dashboard snapshot, so the dashboard does not display Hansen statistics. Do not interpret the Section 11 dashboard as showing Section 12 verification.
 
@@ -117,7 +117,8 @@ ForestWatch-AI/
 │   ├── architecture.md
 │   ├── demo_script.md
 │   ├── judge_qa.md
-│   └── reproducibility.md
+│   ├── reproducibility.md
+│   └── run_record_template.md
 ├── notebooks/
 │   └── forestwatch_pipeline_v2.ipynb
 ├── app.py
