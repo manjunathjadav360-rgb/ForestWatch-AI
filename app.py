@@ -231,6 +231,8 @@ display = display.rename(
     columns={
         "review_rank": "Rank",
         "area_ha": "Area (ha)",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
         "ndvi_drop_2024": "NDVI drop 2024",
         "ndvi_drop_2025": "NDVI drop 2025",
         "ndvi_change_2025_vs_2024": "NDVI change 2025 vs 2024",
