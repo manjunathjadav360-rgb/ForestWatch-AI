@@ -110,7 +110,7 @@ mean_drop = df["ndvi_drop_2025"].mean()
 
 m1, m2, m3, m4 = st.columns(4)
 m1.metric("Regions in file", f"{len(df)}")
-m2.metric("Combined mapped area", f"{total_area:.2f} ha")
+m2.metric("Top-20 area total", f"{total_area:.2f} ha")
 m3.metric("Mean 2025 NDVI drop", "—" if pd.isna(mean_drop) else f"{mean_drop:.3f}")
 m4.metric("Mean radar support", "—" if pd.isna(mean_support) else f"{mean_support * 100:.1f}%")
 
