@@ -99,10 +99,16 @@ Python, Google Colab, Google Earth Engine, Sentinel-2, Sentinel-1, ESA WorldCove
 
 ```text
 ForestWatch-AI/
-├── notebooks/
-│   └── forestwatch_pipeline_v2.ipynb
+├── data/
+│   └── forestwatch_top20_snapshot.csv
 ├── docs/
 │   ├── architecture.md
+│   ├── demo_script.md
+│   ├── judge_qa.md
 │   └── reproducibility.md
+├── notebooks/
+│   └── forestwatch_pipeline_v2.ipynb
+├── app.py
+├── requirements.txt
 └── README.md
 ```
