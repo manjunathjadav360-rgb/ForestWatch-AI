@@ -59,7 +59,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot.
 
-The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates and positive area values, and provides a CSV download of the currently displayed shortlist. Its summary metrics recalculate for the selected rows. Marker locations are centroids, not polygon boundaries.
+The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and radar-share ranges, and provides a CSV download of the currently displayed shortlist. Its summary metrics recalculate for the selected rows. Marker locations are centroids, not polygon boundaries.
 
 Run locally:
 
@@ -79,6 +79,10 @@ A concise 90–120 second presentation flow is in [docs/demo_script.md](docs/dem
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the processing flow and the role of each evidence source.
+
+## Automated repository checks
+
+A GitHub Actions workflow checks dashboard Python syntax and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates and radar-share ranges.
 
 ## Evaluation status
 
