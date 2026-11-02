@@ -77,6 +77,7 @@ evidence_columns = [
     "loss_2021_2025_share_mean",
     "loss_area_2021_2025_ha_sum",
     *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
+    *[f"loss_area_{year}_ha_sum" for year in range(2021, 2026)],
 ]
 
 with st.sidebar:
@@ -159,11 +160,15 @@ if "treecover2000_pct_mean" in df.columns:
         df.loc[invalid, "treecover2000_pct_mean"] = float("nan")
         st.warning("Invalid Hansen year-2000 canopy percentages were omitted.")
 
-if "loss_area_2021_2025_ha_sum" in df.columns:
-    invalid = df["loss_area_2021_2025_ha_sum"].notna() & df["loss_area_2021_2025_ha_sum"].lt(0)
-    if invalid.any():
-        df.loc[invalid, "loss_area_2021_2025_ha_sum"] = float("nan")
-        st.warning("Negative Hansen pixel-area values were omitted.")
+for column in [
+    "loss_area_2021_2025_ha_sum",
+    *[f"loss_area_{year}_ha_sum" for year in range(2021, 2026)],
+]:
+    if column in df.columns:
+        invalid = df[column].notna() & df[column].lt(0)
+        if invalid.any():
+            df.loc[invalid, column] = float("nan")
+            st.warning(f"Negative values in {column} were omitted.")
 
 removed_rows = original_rows - len(df)
 if df.empty:
@@ -362,11 +367,18 @@ with st.expander("Evidence definitions and limitations"):
         - **Map markers:** centroid points only. Use the notebook's GeoJSON export to inspect candidate-region geometries.
         """
     )
-    st.info(
-        "The dashboard's committed snapshot contains Section 11 shortlist fields. "
-        "The independent Hansen Global Forest Change cross-check is calculated in notebook Section 12 "
-        "and is not merged into this dashboard dataset."
-    )
+    if has_hansen:
+        st.caption(
+            "Hansen fields were loaded from the Section 13 export. "
+            "Treecover2000 is historical canopy cover; loss-pixel area is an approximate "
+            "intersection at Hansen's coarser grid resolution."
+        )
+    else:
+        st.info(
+            "The committed pilot snapshot contains Section 11 fields only. "
+            "Run the updated notebook Sections 12 and 13, then upload "
+            "forestwatch_top20_candidates_with_hansen.csv to show the independent cross-check."
+        )
     st.warning(
         "The workflow has not been validated against ground-truth labels. It does not produce a calibrated "
         "probability, accuracy score, or conclusion about the cause or legality of disturbance."
