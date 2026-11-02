@@ -57,7 +57,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 ## Judge-facing results dashboard
 
-The Streamlit dashboard reads the real CSV exported by notebook Section 13. It displays candidate centroids on a map, summary indicators and the ranked evidence table. It intentionally does not ship fabricated sample detections.
+The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot. The map displays candidate centroids, not polygon boundaries.
 
 Run locally:
 
@@ -66,7 +66,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The map displays region centroids (not polygon boundaries). The GeoJSON export can be used separately in a GIS viewer for polygon inspection.
+To use the latest run, upload `forestwatch_top20_candidates.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. The top-20 area metric is the sum of the shortlisted regions only, not the total pilot candidate area. The GeoJSON export can be used separately in a GIS viewer for polygon inspection.
 
 ## Judge demo
 
