@@ -1,6 +1,9 @@
-import streamlit as st
-import pandas as pd
+import math
 from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
 
 st.set_page_config(
     page_title="ForestWatch AI | Review dashboard",
@@ -53,22 +56,36 @@ st.markdown(
 )
 
 st.title("🌿 ForestWatch AI")
-st.caption("Satellite-informed forest disturbance screening · Western Ghats pilot · Neural Storm 2026")
-
+st.caption(
+    "Satellite-informed forest disturbance screening · Western Ghats pilot · Neural Storm 2026"
+)
 st.markdown(
     '<div class="fw-note"><b>Review tool, not an enforcement verdict.</b> '
-    'Candidate regions indicate places for human inspection. Satellite signals alone cannot confirm '
-    'deforestation, natural-forest loss or illegal activity.</div>',
+    "Candidate regions indicate places for human inspection. Satellite signals alone cannot confirm "
+    "deforestation, natural-forest loss or illegal activity.</div>",
     unsafe_allow_html=True,
 )
 
+required_columns = ["area_ha", "latitude", "longitude"]
+evidence_columns = [
+    "ndvi_drop_2024",
+    "ndvi_drop_2025",
+    "ndvi_change_2025_vs_2024",
+    "radar_support_share",
+    "radar_coverage_share",
+]
+
 with st.sidebar:
-    st.header("Pilot results")
-    uploaded = st.file_uploader("Replace with latest Section 13 CSV (optional)", type=["csv"])
-    st.caption("The dashboard opens with the recorded Section 11 pilot shortlist. Upload the latest Section 13 export to replace it.")
+    st.header("Review data")
+    uploaded = st.file_uploader(
+        "Upload latest Section 13 CSV (optional)", type=["csv"]
+    )
+    st.caption(
+        "Without an upload, the dashboard uses the committed Section 11 pilot snapshot."
+    )
 
 default_csv = Path(__file__).parent / "data" / "forestwatch_top20_snapshot.csv"
-source_label = "Recorded Section 11 pilot output snapshot"
+source_label = "Recorded Section 11 pilot snapshot"
 try:
     if uploaded is not None:
         df = pd.read_csv(uploaded)
@@ -82,71 +99,174 @@ except Exception as exc:
     st.error(f"Could not read the candidate data: {exc}")
     st.stop()
 
-st.caption(f"Data source: {source_label}. Upload the latest export when available.")
-
-required = [
-    "area_ha", "latitude", "longitude", "ndvi_drop_2024",
-    "ndvi_drop_2025", "ndvi_change_2025_vs_2024",
-    "radar_support_share", "radar_coverage_share"
-]
-missing = [column for column in required if column not in df.columns]
+missing = [column for column in required_columns if column not in df.columns]
 if missing:
-    st.error("This file is missing expected Section 13 columns: " + ", ".join(missing))
+    st.error("This file is missing required columns: " + ", ".join(missing))
     st.stop()
 
-for column in required:
+original_rows = len(df)
+numeric_columns = required_columns + [
+    column for column in evidence_columns if column in df.columns
+]
+for column in numeric_columns:
     df[column] = pd.to_numeric(df[column], errors="coerce")
-df = df.dropna(subset=["latitude", "longitude", "area_ha"]).copy()
+
+# Keep only records with usable coordinates and a positive mapped area.
+valid_coordinates = (
+    df["latitude"].between(-90, 90)
+    & df["longitude"].between(-180, 180)
+)
+valid_area = df["area_ha"].gt(0)
+df = df.loc[
+    valid_coordinates & valid_area,
+    :
+].dropna(subset=required_columns).copy()
+
+removed_rows = original_rows - len(df)
+if df.empty:
+    st.warning("No valid candidate rows remain after checking coordinates and area.")
+    st.stop()
+
+# Rank consistently by mapped candidate-region area, largest first.
 df = df.sort_values("area_ha", ascending=False).reset_index(drop=True)
 df.insert(0, "review_rank", range(1, len(df) + 1))
 
-if df.empty:
-    st.warning("The uploaded file contains no mappable candidate rows.")
-    st.stop()
+if uploaded is not None:
+    st.caption(f"Data source: {source_label}.")
+else:
+    st.caption(f"Data source: {source_label}. Upload a newer Section 13 CSV to refresh the shortlist.")
 
-total_area = df["area_ha"].sum()
-mean_support = df["radar_support_share"].mean()
-mean_drop = df["ndvi_drop_2025"].mean()
+if removed_rows:
+    st.warning(
+        f"{removed_rows} of {original_rows} rows were excluded because their coordinates or mapped area were invalid."
+    )
 
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Regions in file", f"{len(df)}")
-m2.metric("Top-20 area total", f"{total_area:.2f} ha")
-m3.metric("Mean 2025 NDVI drop", "—" if pd.isna(mean_drop) else f"{mean_drop:.3f}")
-m4.metric("Mean radar support", "—" if pd.isna(mean_support) else f"{mean_support * 100:.1f}%")
+with st.sidebar:
+    st.divider()
+    st.subheader("Shortlist filter")
+    top_n = st.slider(
+        "Largest regions to display",
+        min_value=1,
+        max_value=len(df),
+        value=min(20, len(df)),
+        step=1,
+    )
 
-st.divider()
-left, right = st.columns([1.25, 1])
-with left:
-    st.subheader("Candidate region map")
-    st.caption("Points mark region centroids; they are not polygon boundaries.")
-    map_df = df[["latitude", "longitude"]].rename(columns={"latitude": "lat", "longitude": "lon"})
-    st.map(map_df, zoom=8, use_container_width=True)
+view_df = df.head(top_n).copy()
 
-with right:
-    st.subheader("Largest review candidates")
-    display = df.head(5)[[
-        "review_rank", "area_ha", "ndvi_drop_2024", "ndvi_drop_2025",
-        "radar_support_share", "radar_coverage_share"
-    ]].copy()
-    display.columns = ["Rank", "Area (ha)", "NDVI drop 2024", "NDVI drop 2025", "Radar support", "Radar coverage"]
-    st.dataframe(display, hide_index=True, use_container_width=True)
-
-st.divider()
-st.subheader("Candidate evidence table")
-st.caption("Values are exploratory indicators from the exported shortlist, not calibrated probabilities or accuracy scores.")
-table_columns = [
-    "review_rank", "area_ha", "latitude", "longitude",
-    "ndvi_drop_2024", "ndvi_drop_2025", "ndvi_change_2025_vs_2024",
-    "radar_support_share", "radar_coverage_share"
-]
-st.dataframe(df[table_columns], hide_index=True, use_container_width=True)
-
-st.subheader("How to interpret")
-st.markdown(
-    "- **NDVI drop:** vegetation-index difference relative to the notebook's 2023 baseline.\n"
-    "- **Radar support:** share of regional pixels meeting the exploratory radar-support condition.\n"
-    "- **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.\n"
-    "- **Area:** mapped candidate-region area, not confirmed deforested area."
+# Metrics are calculated only from the rows currently shown.
+mean_drop = (
+    view_df["ndvi_drop_2025"].mean()
+    if "ndvi_drop_2025" in view_df.columns
+    else float("nan")
 )
-st.warning("A high-ranked region is a priority for review, not proof of illegal deforestation. Inspect dated imagery and local context, then verify with authoritative reference information.")
-st.caption("ForestWatch AI · Evidence-first prototype · Recorded pilot snapshot or latest uploaded export")
+mean_support = (
+    view_df["radar_support_share"].mean()
+    if "radar_support_share" in view_df.columns
+    else float("nan")
+)
+mean_coverage = (
+    view_df["radar_coverage_share"].mean()
+    if "radar_coverage_share" in view_df.columns
+    else float("nan")
+)
+candidate_area = view_df["area_ha"].sum()
+
+m1, m2, m3, m4, m5 = st.columns(5)
+m1.metric("Regions shown", f"{len(view_df)}")
+m2.metric("Candidate area shown", f"{candidate_area:.2f} ha")
+m3.metric(
+    "Mean 2025 NDVI drop",
+    "—" if pd.isna(mean_drop) else f"{mean_drop:.3f}",
+)
+m4.metric(
+    "Mean radar support",
+    "—" if pd.isna(mean_support) else f"{mean_support * 100:.1f}%",
+)
+m5.metric(
+    "Mean radar coverage",
+    "—" if pd.isna(mean_coverage) else f"{mean_coverage * 100:.1f}%",
+)
+st.caption(
+    "Area is the sum of displayed candidate-region polygons, not confirmed deforested area. "
+    "Radar coverage is reported separately from radar support."
+)
+
+st.divider()
+st.subheader("Candidate region map")
+st.caption(
+    "Each marker is a region centroid, not its boundary. Larger markers represent larger candidate regions."
+)
+map_df = view_df[["latitude", "longitude", "area_ha"]].copy()
+max_area = max(float(map_df["area_ha"].max()), 0.01)
+map_df["marker_size_m"] = map_df["area_ha"].apply(
+    lambda value: 350 + 1650 * math.sqrt(max(float(value), 0) / max_area)
+)
+st.map(
+    map_df,
+    latitude="latitude",
+    longitude="longitude",
+    size="marker_size_m",
+    zoom=8,
+    use_container_width=True,
+)
+
+st.subheader("Largest review candidates")
+display_columns = [
+    "review_rank",
+    "area_ha",
+    "ndvi_drop_2024",
+    "ndvi_drop_2025",
+    "radar_support_share",
+    "radar_coverage_share",
+]
+available_display_columns = [
+    column for column in display_columns if column in view_df.columns
+]
+display = view_df[available_display_columns].copy()
+display = display.rename(
+    columns={
+        "review_rank": "Rank",
+        "area_ha": "Area (ha)",
+        "ndvi_drop_2024": "NDVI drop 2024",
+        "ndvi_drop_2025": "NDVI drop 2025",
+        "radar_support_share": "Radar support (%)",
+        "radar_coverage_share": "Radar coverage (%)",
+    }
+)
+for column in ["Radar support (%)", "Radar coverage (%)"]:
+    if column in display.columns:
+        display[column] = display[column] * 100
+st.dataframe(display, hide_index=True, use_container_width=True)
+
+st.download_button(
+    "Download displayed shortlist (CSV)",
+    data=view_df.to_csv(index=False).encode("utf-8"),
+    file_name="forestwatch_review_shortlist.csv",
+    mime="text/csv",
+    use_container_width=True,
+)
+
+with st.expander("Evidence definitions and limitations"):
+    st.markdown(
+        """
+        - **NDVI drop:** vegetation-index difference relative to the notebook's 2023 baseline.
+        - **Radar support:** share of regional pixels meeting the exploratory radar-support condition.
+        - **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.
+        - **Candidate area:** mapped area of a region flagged by the screening workflow; it is not confirmed forest-loss area.
+        - **Map markers:** centroid points only. Use the notebook's GeoJSON export to inspect candidate-region geometries.
+        """
+    )
+    st.info(
+        "The dashboard's committed snapshot contains Section 11 shortlist fields. "
+        "The independent Hansen Global Forest Change cross-check is calculated in notebook Section 12 "
+        "and is not merged into this dashboard dataset."
+    )
+    st.warning(
+        "The workflow has not been validated against ground-truth labels. It does not produce a calibrated "
+        "probability, accuracy score, or conclusion about the cause or legality of disturbance."
+    )
+
+st.caption(
+    "ForestWatch AI · Evidence-first prototype · Human verification required"
+)
