@@ -37,8 +37,8 @@ Copy this file for every new Earth Engine run. Fill in values from the actual no
 - Number of regions exported:
 - Hansen top-20 regions evaluated:
 - Hansen regions with at least one loss-year pixel:
-- Hansen area-weighted pixel share:
-- Hansen flagged-pixel area estimate (ha), if computed:
+- Hansen loss-pixel area / candidate polygon area share (%), if computed:
+- Hansen loss-pixel area intersecting shortlist polygons (ha), if computed:
 - Other annual Hansen summaries:
 
 ## Export verification
