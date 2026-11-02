@@ -40,7 +40,7 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 5. Open Google Drive and locate the `ForestWatchAI` folder.
 6. Confirm that the CSV and GeoJSON files exist before using them in a presentation or external map.
 
-The CSV contains the top 20 region attributes selected by Section 13. Radar support is the fraction among observed radar pixels; radar coverage is the fraction of the region with radar observations. Section 12's Hansen-area values are separate from these CSV candidate-region areas. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
+The CSV contains the top 20 region attributes selected by Section 13, including the Hansen tree-cover mean, annual and combined loss-pixel shares, and Hansen loss-pixel area sums for 2021–2025. Radar support is the fraction among observed radar pixels; radar coverage is the fraction of the region with radar observations. Hansen loss-pixel area is a coarse-grid estimate intersected with candidate polygons, not confirmed deforested area. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
 
 ## Reproducibility notes
 
