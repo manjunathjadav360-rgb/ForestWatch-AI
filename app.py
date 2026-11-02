@@ -1,100 +1,121 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(
-    page_title="ForestWatch AI",
+    page_title="ForestWatch AI | Review dashboard",
     page_icon="🌿",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 st.markdown(
     """
     <style>
-      .stApp { background: #f7f8f5; }
-      [data-testid="stSidebar"] { background: #eef2eb; }
-      .block-container { padding-top: 2rem; max-width: 1180px; }
-      .fw-muted { color: #647067; font-size: 0.92rem; }
-      .fw-panel {
-        background: #ffffff;
-        border: 1px solid #e2e8df;
-        border-radius: 12px;
-        padding: 1rem 1.1rem;
-      }
+      .stApp { background: #f5f7f2; }
+      .block-container { max-width: 1200px; padding-top: 1.8rem; }
+      [data-testid="stMetric"] { background: white; padding: 14px 16px; border: 1px solid #e1e8dc; border-radius: 10px; }
+      .fw-note { background: #eef3e9; padding: 12px 16px; border-left: 4px solid #56734f; border-radius: 6px; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("ForestWatch AI")
-st.caption("Satellite-informed forest disturbance screening · Western Ghats pilot")
-
-with st.sidebar:
-    st.subheader("Workspace")
-    st.info("Prototype setup")
-    st.markdown("**Pilot area**")
-    st.write("Western Ghats, India")
-    st.markdown("**Data sources planned**")
-    st.write("Sentinel-2 optical · Sentinel-1 radar")
-    st.caption("No live satellite analysis has been run yet.")
+st.title("🌿 ForestWatch AI")
+st.caption("Satellite-informed forest disturbance screening · Western Ghats pilot · Neural Storm 2026")
 
 st.markdown(
-    """
-    This project is being built as an **evidence-first screening tool**.
-    It aims to flag areas that may need human review—not to declare that
-    illegal deforestation has occurred.
-    """
+    '<div class="fw-note"><b>Review tool, not an enforcement verdict.</b> '
+    'Candidate regions indicate places for human inspection. Satellite signals alone cannot confirm '
+    'deforestation, natural-forest loss or illegal activity.</div>',
+    unsafe_allow_html=True,
 )
 
-left, middle, right = st.columns(3)
-left.metric("Detection status", "Not run")
-middle.metric("Candidate areas", "—")
-right.metric("Evidence quality", "Awaiting data")
+with st.sidebar:
+    st.header("Load pilot results")
+    uploaded = st.file_uploader("Upload Section 13 CSV", type=["csv"])
+    st.caption("In Colab, download forestwatch_top20_candidates.csv from Drive, then upload it here.")
 
-st.divider()
-st.subheader("Investigation workspace")
-
-tab_overview, tab_method, tab_limits = st.tabs(
-    ["Overview", "Method", "Interpretation"]
-)
-
-with tab_overview:
+if uploaded is None:
+    st.info("Upload the CSV exported by notebook Section 13 to display the real candidate map and evidence. No sample or fabricated detections are shown.")
+    st.subheader("How to get the results file")
     st.markdown(
-        """
-        <div class="fw-panel">
-          <h4>What this prototype will do</h4>
-          <ol>
-            <li>Load comparable satellite observations for a selected area.</li>
-            <li>Screen for persistent changes in vegetation signals.</li>
-            <li>Compare optical observations with radar evidence where available.</li>
-            <li>Present candidate locations with dates, indicators and limitations.</li>
-          </ol>
-          <p class="fw-muted">The dashboard will show real results only after the data pipeline is connected and tested.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
+        "1. Open the ForestWatch notebook in Colab.\n"
+        "2. Run Section 13 and wait for the CSV export task to complete.\n"
+        "3. In Google Drive, open the **ForestWatchAI** folder.\n"
+        "4. Download **forestwatch_top20_candidates.csv** and upload it using the sidebar."
     )
+    st.markdown("**Pipeline:** Sentinel-2 change → persistence screen → Sentinel-1 context → ESA WorldCover reference → regional shortlist → Hansen cross-check.")
+    st.stop()
 
-with tab_method:
-    st.markdown("### Planned analysis")
-    st.write(
-        "- Sentinel-2: cloud-screened vegetation observations and NDVI change.\n"
-        "- Sentinel-1: complementary radar observations, interpreted cautiously.\n"
-        "- Temporal comparison: observations from comparable seasonal windows.\n"
-        "- Review output: candidate disturbance polygons and supporting evidence."
-    )
-    st.latex(r"NDVI = \frac{NIR - Red}{NIR + Red}")
+try:
+    df = pd.read_csv(uploaded)
+except Exception as exc:
+    st.error(f"Could not read this CSV: {exc}")
+    st.stop()
 
-with tab_limits:
-    st.warning(
-        "A change in satellite imagery is not proof of illegal activity. "
-        "Fire, storms, landslides, seasonal variation, harvesting and data-quality "
-        "issues can produce similar signals."
-    )
-    st.write(
-        "ForestWatch AI is intended to prioritize locations for expert review. "
-        "Any future confidence or priority score will be explained and evaluated "
-        "against reference data before being presented as meaningful."
-    )
+required = [
+    "area_ha", "latitude", "longitude", "ndvi_drop_2024",
+    "ndvi_drop_2025", "ndvi_change_2025_vs_2024",
+    "radar_support_share", "radar_coverage_share"
+]
+missing = [column for column in required if column not in df.columns]
+if missing:
+    st.error("This file is missing expected Section 13 columns: " + ", ".join(missing))
+    st.stop()
+
+for column in required:
+    df[column] = pd.to_numeric(df[column], errors="coerce")
+df = df.dropna(subset=["latitude", "longitude", "area_ha"]).copy()
+df = df.sort_values("area_ha", ascending=False).reset_index(drop=True)
+df.insert(0, "review_rank", range(1, len(df) + 1))
+
+if df.empty:
+    st.warning("The uploaded file contains no mappable candidate rows.")
+    st.stop()
+
+total_area = df["area_ha"].sum()
+mean_support = df["radar_support_share"].mean()
+mean_drop = df["ndvi_drop_2025"].mean()
+
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("Regions in file", f"{len(df)}")
+m2.metric("Combined mapped area", f"{total_area:.2f} ha")
+m3.metric("Mean 2025 NDVI drop", "—" if pd.isna(mean_drop) else f"{mean_drop:.3f}")
+m4.metric("Mean radar support", "—" if pd.isna(mean_support) else f"{mean_support * 100:.1f}%")
 
 st.divider()
-st.caption("ForestWatch AI · Neural Storm 2026 · Early development build")
+left, right = st.columns([1.25, 1])
+with left:
+    st.subheader("Candidate region map")
+    st.caption("Points mark region centroids; they are not polygon boundaries.")
+    map_df = df[["latitude", "longitude"]].rename(columns={"latitude": "lat", "longitude": "lon"})
+    st.map(map_df, zoom=8, use_container_width=True)
+
+with right:
+    st.subheader("Largest review candidates")
+    display = df.head(5)[[
+        "review_rank", "area_ha", "ndvi_drop_2024", "ndvi_drop_2025",
+        "radar_support_share", "radar_coverage_share"
+    ]].copy()
+    display.columns = ["Rank", "Area (ha)", "NDVI drop 2024", "NDVI drop 2025", "Radar support", "Radar coverage"]
+    st.dataframe(display, hide_index=True, use_container_width=True)
+
+st.divider()
+st.subheader("Candidate evidence table")
+st.caption("Values are exploratory indicators from the exported shortlist, not calibrated probabilities or accuracy scores.")
+table_columns = [
+    "review_rank", "area_ha", "latitude", "longitude",
+    "ndvi_drop_2024", "ndvi_drop_2025", "ndvi_change_2025_vs_2024",
+    "radar_support_share", "radar_coverage_share"
+]
+st.dataframe(df[table_columns], hide_index=True, use_container_width=True)
+
+st.subheader("How to interpret")
+st.markdown(
+    "- **NDVI drop:** vegetation-index difference relative to the notebook's 2023 baseline.\n"
+    "- **Radar support:** share of regional pixels meeting the exploratory radar-support condition.\n"
+    "- **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.\n"
+    "- **Area:** mapped candidate-region area, not confirmed deforested area."
+)
+st.warning("A high-ranked region is a priority for review, not proof of illegal deforestation. Inspect dated imagery and local context, then verify with authoritative reference information.")
+st.caption("ForestWatch AI · Evidence-first prototype · Results shown only from the CSV uploaded in this session")
