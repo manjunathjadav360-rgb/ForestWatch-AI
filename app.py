@@ -215,8 +215,11 @@ st.subheader("Largest review candidates")
 display_columns = [
     "review_rank",
     "area_ha",
+    "latitude",
+    "longitude",
     "ndvi_drop_2024",
     "ndvi_drop_2025",
+    "ndvi_change_2025_vs_2024",
     "radar_support_share",
     "radar_coverage_share",
 ]
@@ -230,6 +233,7 @@ display = display.rename(
         "area_ha": "Area (ha)",
         "ndvi_drop_2024": "NDVI drop 2024",
         "ndvi_drop_2025": "NDVI drop 2025",
+        "ndvi_change_2025_vs_2024": "NDVI change 2025 vs 2024",
         "radar_support_share": "Radar support (%)",
         "radar_coverage_share": "Radar coverage (%)",
     }
