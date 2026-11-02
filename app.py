@@ -286,15 +286,16 @@ st.caption(
 )
 map_df = view_df[["latitude", "longitude", "area_ha"]].copy()
 max_area = max(float(map_df["area_ha"].max()), 0.01)
-# Streamlit map marker sizes are pixel-scale values; keep the range readable.
-map_df["marker_size_px"] = map_df["area_ha"].apply(
-    lambda value: 8 + 20 * math.sqrt(max(float(value), 0) / max_area)
+# st.map interprets the size column in metres. Use the equivalent-circle
+# diameter for each region so marker area remains proportional to candidate area.
+map_df["marker_diameter_m"] = map_df["area_ha"].apply(
+    lambda value: 2 * math.sqrt(max(float(value), 0) * 10000 / math.pi)
 )
 st.map(
     map_df,
     latitude="latitude",
     longitude="longitude",
-    size="marker_size_px",
+    size="marker_diameter_m",
     zoom=8,
     width="stretch",
 )
