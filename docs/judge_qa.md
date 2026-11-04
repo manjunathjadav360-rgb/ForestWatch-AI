@@ -8,7 +8,7 @@ Forest disturbance is difficult to review over large areas. ForestWatch creates 
 
 ## 2. What is the AI contribution?
 
-The prototype combines explicit satellite change screening with an unsupervised machine-learning stage. A StandardScaler + Isolation Forest model is fitted to a reproducible random sample of non-candidate 2021 tree-cover pixels in the pilot AOI using seven features: NDVI drops in 2024 and 2025, 2025-vs-2024 NDVI change, Sentinel-1 VV and VH change, a radar-support flag, and a radar-availability flag. It scores pixels across all sampleable connected candidate regions and orders those regions by median anomaly percentile before selecting the final 20 priorities. This is relative anomaly ranking, not a supervised forest-loss classification or a probability of illegal activity.
+The prototype combines explicit satellite change screening with an unsupervised machine-learning stage. A StandardScaler + Isolation Forest model is fitted to a reproducible random sample of non-candidate 2021 tree-cover pixels in the pilot AOI using seven features: NDVI drops in 2024 and 2025, 2025-vs-2024 NDVI change, Sentinel-1 VV and VH change, a radar-support flag, and a radar-availability flag. It scores pixels across all sampleable connected candidate regions and orders those regions by median anomaly percentile before selecting the final 20 priorities. The export also retains per-region NDVI, VV/VH change medians and radar-availability/support shares so the anomaly ranking can be inspected. This is relative anomaly ranking, not a supervised forest-loss classification or a probability of illegal activity.
 
 ## 3. How was the ML model trained, and what does its score mean?
 
