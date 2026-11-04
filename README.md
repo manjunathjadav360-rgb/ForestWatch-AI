@@ -17,8 +17,8 @@ The main working workflow is in [`notebooks/forestwatch_pipeline_v2.ipynb`](note
 4. Add Sentinel-1 VV/VH radar observations as complementary context.
 5. Intersect persistent candidates with ESA WorldCover 2021 tree-cover class 10.
 6. Group connected pixels into regions (minimum mapped area 0.1 ha) and measure regional optical/radar evidence.
-7. Rank the 20 largest tree-cover-overlap regions for review.
-8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask, using a held-out calibration split using seven optical/radar features; score candidate pixels across all sampleable connected regions and create a separate ML priority order.
+7. Retain the original area rank for every connected tree-cover-overlap candidate region.
+8. Fit a StandardScaler + Isolation Forest on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask, using seven optical/radar features and a held-out calibration split; score every sampleable candidate region and select the 20 highest anomaly priorities.
 9. Cross-check the ML-ranked shortlist with Hansen Global Forest Change 2025 v1.13.
 10. Export the top 20 regions, ML scores and Hansen fields as CSV and GeoJSON to Google Drive.
 
@@ -61,7 +61,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 14 in the sidebar to replace that snapshot.
 
-The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it orders the 20-region shortlist by the unsupervised ML priority rank and displays median anomaly percentiles, high-anomaly pixel shares and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
+The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it displays the 20 highest ML anomaly priorities, their original area ranks, median anomaly percentiles, high-anomaly pixel shares and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
 
 Run locally:
 
@@ -92,7 +92,7 @@ A GitHub Actions workflow runs dashboard startup tests and ML unit tests, checks
 
 ## Evaluation status
 
-The prototype now includes an **unsupervised Isolation Forest anomaly-ranking stage**. It is fitted to a reproducible random sample of valid 2021 tree-cover optical/radar feature vectors outside the persistent-candidate mask and scores candidate pixels across all sampleable connected regions. The displayed anomaly percentile is relative to that sampled AOI reference distribution; it is not a probability, supervised class or proof of disturbance. The model has **not** been evaluated against verified ground-truth labels. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A supervised evaluation requires independent reference labels and a geographically and temporally representative held-out test set.
+The prototype now includes an **unsupervised Isolation Forest anomaly-ranking stage**. It is fitted to a reproducible random sample of valid 2021 tree-cover optical/radar feature vectors outside the persistent-candidate mask and scores candidate pixels across all sampleable connected regions. The displayed anomaly percentile is relative to the held-out non-candidate tree-cover calibration distribution; it is not a probability, supervised class or proof of disturbance. The model has **not** been evaluated against verified ground-truth labels. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A supervised evaluation requires independent reference labels and a geographically and temporally representative held-out test set.
 
 ## Limitations and responsible interpretation
 
