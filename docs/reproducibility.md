@@ -26,10 +26,11 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 | 9 | Region-level evidence view | Regional evidence table |
 | 10 | ESA WorldCover tree-cover reference screen | `tree_cover_persistent_candidates` |
 | 11 | Connected-region shortlist and regional metrics | `ranked_regions`; radar support is calculated among valid radar-observed pixels, with coverage reported separately |
-| 12 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions, plus approximate Hansen pixel-area sums inside shortlist geometries |
-| 13 | CSV and GeoJSON exports | Two Earth Engine Drive export tasks |
+| 12 | Unsupervised ML anomaly ranking | `ml_review_regions`; StandardScaler + Isolation Forest trained on up to 8,000 random AOI samples and used to reorder the 20 largest regions |
+| 13 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions, plus approximate Hansen pixel-area sums inside ML-ranked shortlist geometries |
+| 14 | CSV and GeoJSON exports | Two Earth Engine Drive export tasks containing ML and Hansen fields |
 
-**Important dependencies:** Section 11 requires the variables produced by earlier optical/radar sections and Section 10. Sections 12 and 13 require Section 11 to have run successfully in the current runtime.
+**Important dependencies:** Section 11 requires the variables produced by earlier optical/radar sections and Section 10. Section 12 requires Section 11 and the Section 6/8 optical/radar layers. Sections 13 and 14 require the ML-ranked regions and Hansen results from the current runtime.
 
 ## Export procedure
 
@@ -40,11 +41,13 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 5. Open Google Drive and locate the `ForestWatchAI` folder.
 6. Confirm that the CSV and GeoJSON files exist before using them in a presentation or external map.
 
-The CSV contains the top 20 region attributes selected by Section 13, including the Hansen tree-cover mean, annual and combined loss-pixel shares, and Hansen loss-pixel area sums for 2021–2025. Radar support is the fraction among observed radar pixels; radar coverage is the fraction of the region with radar observations. Hansen loss-pixel area is a coarse-grid estimate intersected with candidate polygons, not confirmed deforested area. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
+The CSV contains the top 20 regions ordered by Section 12 ML priority, including area rank, ML median anomaly percentile, the fraction of sampled pixels at or above the 95th anomaly percentile, pixel sample count, Hansen tree-cover mean, annual and combined loss-pixel shares, and Hansen loss-pixel area sums for 2021–2025. Radar support is the fraction among observed radar pixels; radar coverage is the fraction of the region with radar observations. Hansen loss-pixel area is a coarse-grid estimate intersected with candidate polygons, not confirmed deforested area. The GeoJSON contains the corresponding region geometries and properties. The exported data is a review shortlist, not a set of confirmed deforestation events.
 
 ## Reproducibility notes
 
 - The notebook uses Google Earth Engine datasets; results can change as source collections are updated or as data availability changes.
+- The anomaly model is unsupervised. Its percentiles are relative to the sampled AOI reference distribution and are not calibrated event probabilities.
+- The ML stage only reorders the 20 largest regions selected by area in Section 11; it does not score all 790 connected regions.
 - The pilot AOI and seasonal windows are defined in notebook code. Record any changes to them when comparing runs.
 - Run all dependent sections in one runtime to avoid missing variables or stale server objects.
 - If a runtime disconnects, rerun the notebook from Section 1 onward.
