@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "app.py"
+      - "forestwatch_ml.py"
       - "tests/**"
       - "requirements.txt"
       - "notebooks/**"
