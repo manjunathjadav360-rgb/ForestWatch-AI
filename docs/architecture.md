@@ -36,7 +36,7 @@ flowchart TD
 | Sentinel-1 GRD | VV/VH radar change context | Complementary evidence; backscatter changes are not uniquely attributable |
 | ESA WorldCover 2021 | Historical tree-cover reference (class 10) | Helps screen to areas mapped as tree cover; does not prove natural forest |
 | Connected regions | Groups adjacent candidate pixels and filters tiny fragments | Creates reviewable geographic units |
-| Unsupervised ML stage | StandardScaler + Isolation Forest over seven optical/radar features, fitted to a reproducible random sample of valid 2021 tree-cover pixels outside the persistent-candidate mask, with held-out score calibration | Produces relative anomaly percentiles for sampled pixels across all candidate regions with usable data; selects 20 priorities for cross-checking, not a probability or supervised forest-loss class |
+| Unsupervised ML stage | StandardScaler + Isolation Forest over seven optical/radar features, fitted to a reproducible random sample of valid 2021 tree-cover pixels outside the persistent-candidate mask, with held-out score calibration | Produces relative anomaly percentiles and per-region optical/radar feature summaries for all candidate regions with usable data; selects 20 priorities for cross-checking, not a probability or supervised forest-loss class |
 | Hansen Global Forest Change | Independent, coarser loss-year cross-check | Indicates mapped stand-replacement loss, not its cause or legality |
 | CSV / GeoJSON export | Makes shortlist reusable in analysis and mapping tools | Exports candidates for human review |
 
