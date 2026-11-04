@@ -73,9 +73,18 @@ evidence_columns = [
     "ndvi_change_2025_vs_2024",
     "radar_support_share",
     "radar_coverage_share",
+    "area_rank",
+    "ml_anomaly_percentile_median",
+    "ml_anomaly_p95_share",
+    "ml_sample_count",
     "treecover2000_pct_mean",
     "loss_2021_2025_share_mean",
     "loss_area_2021_2025_ha_sum",
+    "ml_anomaly_percentile_median",
+    "ml_anomaly_p95_share",
+    "ml_sample_count",
+    "ml_priority_rank",
+    "area_rank",
     *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
     *[f"loss_area_{year}_ha_sum" for year in range(2021, 2026)],
 ]
@@ -83,7 +92,7 @@ evidence_columns = [
 with st.sidebar:
     st.header("Review data")
     uploaded = st.file_uploader(
-        "Upload Section 13 CSV with Hansen results (optional)", type=["csv"]
+        "Upload Section 14 CSV with ML + Hansen results (optional)", type=["csv"]
     )
     st.caption(
         "Without an upload, the dashboard uses the committed Section 11 pilot snapshot."
@@ -115,12 +124,22 @@ hansen_required = {
     "loss_area_2021_2025_ha_sum",
 }
 has_hansen = hansen_required.issubset(df.columns)
+ml_required = {
+    "ml_priority_rank",
+    "ml_anomaly_percentile_median",
+    "ml_anomaly_p95_share",
+    "ml_sample_count",
+}
+has_ml = ml_required.issubset(df.columns)
 if uploaded is not None:
-    source_label = (
-        "User-uploaded Section 13 export with Hansen cross-check"
-        if has_hansen
-        else "User-uploaded CSV without Hansen cross-check fields"
-    )
+    if has_ml and has_hansen:
+        source_label = "User-uploaded Section 14 export with ML ranking and Hansen cross-check"
+    elif has_ml:
+        source_label = "User-uploaded CSV with unsupervised ML ranking"
+    elif has_hansen:
+        source_label = "User-uploaded CSV with Hansen cross-check fields"
+    else:
+        source_label = "User-uploaded CSV without ML or Hansen fields"
 
 original_rows = len(df)
 numeric_columns = required_columns + [
@@ -144,6 +163,7 @@ df = df.loc[
 share_columns = [
     "radar_support_share",
     "radar_coverage_share",
+    "ml_anomaly_p95_share",
     "loss_2021_2025_share_mean",
     *[f"loss_{year}_share_mean" for year in range(2021, 2026)],
 ]
@@ -153,6 +173,27 @@ for column in share_columns:
         invalid = df[column].notna() & ~df[column].between(0, 1)
         invalid_share_counts[column] = int(invalid.sum())
         df.loc[invalid, column] = float("nan")
+
+if "ml_anomaly_percentile_median" in df.columns:
+    invalid = (
+        df["ml_anomaly_percentile_median"].notna()
+        & ~df["ml_anomaly_percentile_median"].between(0, 100)
+    )
+    if invalid.any():
+        df.loc[invalid, "ml_anomaly_percentile_median"] = float("nan")
+        st.warning("Invalid ML anomaly percentiles were omitted.")
+
+if "ml_sample_count" in df.columns:
+    invalid = df["ml_sample_count"].notna() & df["ml_sample_count"].lt(0)
+    if invalid.any():
+        df.loc[invalid, "ml_sample_count"] = float("nan")
+        st.warning("Negative ML sample counts were omitted.")
+
+if "ml_priority_rank" in df.columns:
+    invalid = df["ml_priority_rank"].notna() & df["ml_priority_rank"].lt(1)
+    if invalid.any():
+        df.loc[invalid, "ml_priority_rank"] = float("nan")
+        st.warning("Invalid ML priority ranks were omitted.")
 
 if "treecover2000_pct_mean" in df.columns:
     invalid = df["treecover2000_pct_mean"].notna() & ~df["treecover2000_pct_mean"].between(0, 100)
@@ -175,8 +216,16 @@ if df.empty:
     st.warning("No valid candidate rows remain after checking coordinates and area.")
     st.stop()
 
-# Rank consistently by mapped candidate-region area, largest first.
-df = df.sort_values("area_ha", ascending=False).reset_index(drop=True)
+# Use the model priority order when an enriched export is uploaded; otherwise
+# retain the recorded Section 11 area order for the fallback snapshot.
+if has_ml:
+    df = df.sort_values(
+        ["ml_priority_rank", "area_ha"],
+        ascending=[True, False],
+        na_position="last",
+    ).reset_index(drop=True)
+else:
+    df = df.sort_values("area_ha", ascending=False).reset_index(drop=True)
 df.insert(0, "review_rank", range(1, len(df) + 1))
 
 if uploaded is not None:
@@ -200,7 +249,7 @@ with st.sidebar:
     st.divider()
     st.subheader("Shortlist filter")
     top_n = st.slider(
-        "Largest regions to display",
+        "Review priorities to display" if has_ml else "Largest regions to display",
         min_value=1,
         max_value=len(df),
         value=min(20, len(df)),
@@ -247,6 +296,26 @@ st.caption(
     "Radar coverage is reported separately from radar support."
 )
 
+if has_ml:
+    st.subheader("Unsupervised ML anomaly analysis")
+    st.caption(
+        "StandardScaler + Isolation Forest scores multi-sensor feature patterns. "
+        "Percentiles compare candidate pixels with the sampled pilot-AOI reference distribution; "
+        "they are not probabilities or accuracy scores."
+    )
+    ml_median = view_df["ml_anomaly_percentile_median"].median()
+    ml_priority_count = int(
+        view_df["ml_anomaly_percentile_median"].ge(95).sum()
+    )
+    ml_pixels = int(view_df["ml_sample_count"].fillna(0).sum())
+    ml1, ml2, ml3 = st.columns(3)
+    ml1.metric(
+        "Median regional anomaly percentile",
+        "—" if pd.isna(ml_median) else f"{ml_median:.1f}",
+    )
+    ml2.metric("Regions with median ≥95th percentile", f"{ml_priority_count}/{len(view_df)}")
+    ml3.metric("Candidate pixels scored", f"{ml_pixels:,}")
+
 with st.expander("Independent Hansen cross-check", expanded=has_hansen):
     if has_hansen:
         hansen_area = view_df["loss_area_2021_2025_ha_sum"].sum(min_count=1)
@@ -275,7 +344,7 @@ with st.expander("Independent Hansen cross-check", expanded=has_hansen):
     else:
         st.info(
             "The committed pilot snapshot contains Section 11 fields only. "
-            "To display Hansen results here, run the updated notebook Sections 12 and 13, "
+            "To display ML and Hansen results here, run notebook Sections 12–14, "
             "then upload forestwatch_top20_candidates_with_hansen.csv from Google Drive."
         )
 
@@ -323,7 +392,8 @@ available_display_columns = [
 display = view_df[available_display_columns].copy()
 display = display.rename(
     columns={
-        "review_rank": "Rank",
+        "review_rank": "ML priority rank" if has_ml else "Area review rank",
+        "area_rank": "Original area rank",
         "region_id": "Region ID (this run)",
         "area_ha": "Area (ha)",
         "latitude": "Latitude",
@@ -333,6 +403,9 @@ display = display.rename(
         "ndvi_change_2025_vs_2024": "NDVI change 2025 vs 2024",
         "radar_support_share": "Radar support (%)",
         "radar_coverage_share": "Radar coverage (%)",
+        "ml_anomaly_percentile_median": "Median ML anomaly percentile",
+        "ml_anomaly_p95_share": "Pixels ≥95th anomaly percentile (%)",
+        "ml_sample_count": "ML pixels scored",
         "treecover2000_pct_mean": "Hansen tree cover 2000 mean (%)",
         "loss_2021_2025_share_mean": "Hansen loss share 2021–25 (%)",
         "loss_area_2021_2025_ha_sum": "Hansen loss-pixel area (ha)",
@@ -345,6 +418,7 @@ display = display.rename(
 for column in [
     "Radar support (%)",
     "Radar coverage (%)",
+    "Pixels ≥95th anomaly percentile (%)",
     "Hansen loss share 2021–25 (%)",
     *[f"Hansen loss share {year} (%)" for year in range(2021, 2026)],
 ]:
@@ -379,8 +453,8 @@ with st.expander("Evidence definitions and limitations"):
     else:
         st.info(
             "The committed pilot snapshot contains Section 11 fields only. "
-            "Run the updated notebook Sections 12 and 13, then upload "
-            "forestwatch_top20_candidates_with_hansen.csv to show the independent cross-check."
+            "Run the updated notebook Sections 12–14, then upload "
+            "forestwatch_top20_candidates_with_hansen.csv to show ML ranking and the independent cross-check."
         )
     st.warning(
         "The workflow has not been validated against ground-truth labels. It does not produce a calibrated "
