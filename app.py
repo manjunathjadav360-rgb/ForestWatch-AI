@@ -441,6 +441,8 @@ with st.expander("Evidence definitions and limitations"):
         - **Radar support:** share of radar-observed pixels meeting the exploratory radar-support condition. Pixels without radar observations are excluded from this share.
         - **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.
         - **Candidate area:** mapped area of a region flagged by the screening workflow; it is not confirmed forest-loss area.
+        - **ML anomaly percentile:** relative rank against the sampled pilot-AOI reference distribution; it is not a probability or supervised class.
+        - **ML ≥95th-percentile share:** fraction of sampled pixels in a region whose anomaly percentile is at least 95.
         - **Map markers:** centroid points only. Use the notebook's GeoJSON export to inspect candidate-region geometries.
         """
     )
