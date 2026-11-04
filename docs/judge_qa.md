@@ -12,7 +12,7 @@ The prototype combines explicit satellite change screening with an unsupervised 
 
 ## 3. How was the ML model trained, and what does its score mean?
 
-The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid 2021 tree-cover pixels outside the persistent-candidate mask. The sample is split into model-fit and held-out calibration subsets. Candidate pixels are compared with the held-out calibration score distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the sample. No human labels are used, and the percentile is not a probability of deforestation.
+The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid 2021 tree-cover pixels outside the persistent-candidate mask. The sample is split into model-fit and held-out calibration subsets. Candidate pixels are compared with the held-out calibration score distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the separate held-out calibration sample. No human labels are used, and the percentile is not a probability of deforestation.
 
 ## 4. Which programming language did you use?
 
@@ -27,7 +27,7 @@ Python is the primary language in the Google Colab notebook, using the Google Ea
 
 ## 6. What did the pilot produce?
 
-The recorded pilot run reported approximately 485.92 ha of persistent optical candidate pixels. Approximately 413.12 ha overlapped ESA WorldCover 2021 tree-cover class 10 (about 85.02%). The connected-region review contained 790 regions of at least 0.1 ha, from which the 20 largest were shortlisted.
+The recorded pilot run reported approximately 485.92 ha of persistent optical candidate pixels. Approximately 413.12 ha overlapped ESA WorldCover 2021 tree-cover class 10 (about 85.02%). The connected-region review contained 790 regions of at least 0.1 ha. Section 11 retains their original area ranks; Section 12 scores all regions with usable pixel samples and selects the 20 highest anomaly priorities.
 
 These are screening outputs, not confirmed deforestation measurements.
 
