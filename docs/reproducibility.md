@@ -26,7 +26,7 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 | 9 | Region-level evidence view | Regional evidence table |
 | 10 | ESA WorldCover tree-cover reference screen | `tree_cover_persistent_candidates` |
 | 11 | Connected-region shortlist and regional metrics | `ranked_regions`; radar support is calculated among valid radar-observed pixels, with coverage reported separately |
-| 12 | Unsupervised ML anomaly ranking | `ml_review_regions`; StandardScaler + Isolation Forest trained on up to 8,000 random AOI samples and used to rank all sampleable candidate regions before selecting the top 20 anomaly priorities |
+| 12 | Unsupervised ML anomaly ranking | `ml_review_regions`; StandardScaler + Isolation Forest trained on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask; 75% model-fit / 25% held-out calibration split; seven features; ranks all sampleable candidate regions before selecting the top 20 anomaly priorities |
 | 13 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions, plus approximate Hansen pixel-area sums inside ML-ranked shortlist geometries |
 | 14 | CSV and GeoJSON exports | Two Earth Engine Drive export tasks containing ML and Hansen fields |
 
@@ -47,7 +47,7 @@ The CSV contains the top 20 regions ordered by Section 12 ML priority, including
 
 - The notebook uses Google Earth Engine datasets; results can change as source collections are updated or as data availability changes.
 - The anomaly model is unsupervised. Its model-fit population is sampled from valid 2021 tree-cover pixels outside the persistent-candidate mask, and a separate held-out subset calibrates the anomaly percentiles. Those percentiles are relative rankings, not event probabilities.
-- The ML stage only reorders the 20 largest regions selected by area in Section 11; it does not score all 790 connected regions.
+- The ML stage samples all Section 11 candidate polygons at 20 m scale and ranks regions that return valid pixel samples. The output records how many regions were scored and how many were not sampled.
 - The pilot AOI and seasonal windows are defined in notebook code. Record any changes to them when comparing runs.
 - Run all dependent sections in one runtime to avoid missing variables or stale server objects.
 - If a runtime disconnects, rerun the notebook from Section 1 onward.
