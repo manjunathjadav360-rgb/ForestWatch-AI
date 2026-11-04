@@ -24,6 +24,11 @@ Copy this file for every new Earth Engine run. Fill in values from the actual no
 - Persistence criteria:
 - Minimum connected-region area:
 - Radar-support definition / threshold:
+- ML algorithm and library version:
+- ML feature list:
+- ML reference sample size returned:
+- ML contamination setting / random seed:
+- ML candidate-pixel sample count:
 - Any manual parameter changes:
 
 ## Results — copy from notebook output
@@ -35,6 +40,9 @@ Copy this file for every new Earth Engine run. Fill in values from the actual no
 - WorldCover overlap share (%):
 - Connected regions above minimum area:
 - Number of regions exported:
+- ML regions scored:
+- ML priority order and median anomaly percentiles:
+- Per-region ML pixel counts:
 - Hansen top-20 regions evaluated:
 - Hansen regions with at least one loss-year pixel:
 - Hansen loss-pixel area / candidate polygon area share (%), if computed:
@@ -65,5 +73,6 @@ Copy this file for every new Earth Engine run. Fill in values from the actual no
 - Candidate area is not confirmed deforested area.
 - Hansen loss pixels are a coarse cross-check, not ground truth.
 - A Hansen loss flag does not identify cause, natural-forest status or illegality.
+- ML anomaly percentiles are relative rankings, not calibrated probabilities.
 - No accuracy, precision, recall or F1 score may be reported without independent labels and a defined evaluation protocol.
 - Record any missing or failed data rather than silently treating it as zero.
