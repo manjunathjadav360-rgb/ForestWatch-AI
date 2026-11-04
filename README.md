@@ -35,7 +35,7 @@ The following values are from the pilot notebook execution outputs recorded duri
 | Largest region in the Section 11 shortlist | approximately 21.45 ha |
 | Regions examined in the top-ranked shortlist | 20 |
 
-For the top 20 regions, radar coverage was reported separately from radar support; coverage was 100% in the recorded Section 11 output, while radar support varied by region. Radar support is calculated among pixels with valid radar observations; radar coverage is reported separately. These indicators are not an accuracy score. Section 12 reports Hansen loss-pixel fractions and approximate pixel-area sums within the shortlist geometries; read the output from the actual run rather than inferring unrecorded values.
+For the top 20 regions, radar coverage was reported separately from radar support; coverage was 100% in the recorded Section 11 output, while radar support varied by region. Radar support is calculated among pixels with valid radar observations; radar coverage is reported separately. These indicators are not an accuracy score. Section 12 generates relative unsupervised ML anomaly percentiles; Section 13 reports Hansen loss-pixel fractions and approximate pixel-area sums within the shortlist geometries. Read values from the actual run rather than inferring unrecorded values.
 
 ## Data sources
 
@@ -51,15 +51,15 @@ Dataset definitions, resolutions and limitations are described in the notebook a
 1. Open the [ForestWatch pipeline notebook](notebooks/forestwatch_pipeline_v2.ipynb) in Google Colab.
 2. Use a Google account with access to Google Earth Engine.
 3. In Section 2, confirm that `PROJECT_ID` matches your registered Earth Engine Cloud project (the development project is `forestwatch-ai-2026`).
-4. Run the notebook sections in order in one runtime. In particular, Section 11 creates `ranked_regions`, which Sections 12 and 13 use.
+4. Run the notebook sections in order in one runtime. In particular, Section 11 creates `ranked_regions`; Sections 12–14 build the ML-ranked shortlist, Hansen cross-check and exports.
 5. Complete the Earth Engine authentication prompts when asked.
-6. Run Section 13 and monitor both export tasks in the Earth Engine Tasks panel. The CSV and GeoJSON files are written to the `ForestWatchAI` folder in Google Drive.
+6. Run Section 14 and monitor both export tasks in the Earth Engine Tasks panel. The CSV and GeoJSON files are written to the `ForestWatchAI` folder in Google Drive.
 
 See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run order and troubleshooting notes.
 
 ## Judge-facing results dashboard
 
-The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot.
+The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 14 in the sidebar to replace that snapshot.
 
 The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it orders the 20-region shortlist by the unsupervised ML priority rank and displays median anomaly percentiles, high-anomaly pixel shares and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
 
