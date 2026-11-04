@@ -47,7 +47,7 @@ ForestWatch separates three concepts:
 1. **Candidate generation:** persistent optical vegetation decline in the selected seasonal windows.
 2. **Evidence context:** radar support and historical tree-cover / forest-loss references.
 3. **Initial review shortlist:** the 20 largest connected regions are selected by mapped area.
-4. **ML review priority:** an unsupervised Isolation Forest reorders those 20 using the median anomaly percentile of their sampled multi-sensor pixels. This is a relative anomaly ranking only.
+4. **ML review priority:** an unsupervised Isolation Forest reorders those 20 using the median anomaly percentile of their sampled multi-sensor pixels across all sampleable candidate regions; the top 20 model priorities proceed to independent cross-checking. This is a relative anomaly ranking only.
 5. **Independent cross-check:** Hansen loss-year values are shown separately and do not train the anomaly model.
 
 These are not a calibrated probability model. A high-ranked region is not necessarily illegal deforestation, and a low-ranked or unflagged region is not guaranteed to be unchanged.
