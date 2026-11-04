@@ -99,7 +99,7 @@ source_label = "Recorded Section 11 pilot snapshot"
 try:
     if uploaded is not None:
         df = pd.read_csv(uploaded)
-        source_label = "User-uploaded Section 13 export"
+        source_label = "User-uploaded CSV export"
     elif default_csv.exists():
         df = pd.read_csv(default_csv)
     else:
@@ -227,7 +227,7 @@ df.insert(0, "review_rank", range(1, len(df) + 1))
 if uploaded is not None:
     st.caption(f"Data source: {source_label}.")
 else:
-    st.caption(f"Data source: {source_label}. Upload a newer Section 13 CSV to refresh the shortlist.")
+    st.caption(f"Data source: {source_label}. Upload the latest Section 14 CSV to refresh the shortlist.")
 
 if removed_rows:
     st.warning(
@@ -296,7 +296,7 @@ if has_ml:
     st.subheader("Unsupervised ML anomaly analysis")
     st.caption(
         "StandardScaler + Isolation Forest scores multi-sensor feature patterns. "
-        "Percentiles compare candidate pixels with the sampled pilot-AOI reference distribution; "
+        "Percentiles compare candidate pixels with the held-out non-candidate tree-cover calibration distribution; "
         "they are not probabilities or accuracy scores."
     )
     ml_median = view_df["ml_anomaly_percentile_median"].median()
@@ -383,7 +383,7 @@ st.map(
     width="stretch",
 )
 
-st.subheader("Largest review candidates")
+st.subheader("ML review priorities" if has_ml else "Largest review candidates")
 display_columns = [
     "review_rank",
     "region_id",
@@ -459,7 +459,7 @@ with st.expander("Evidence definitions and limitations"):
         - **Radar support:** share of radar-observed pixels meeting the exploratory radar-support condition. Pixels without radar observations are excluded from this share.
         - **Radar coverage:** share of regional pixels with radar observations. Coverage is not support.
         - **Candidate area:** mapped area of a region flagged by the screening workflow; it is not confirmed forest-loss area.
-        - **ML anomaly percentile:** relative rank against the sampled pilot-AOI reference distribution; it is not a probability or supervised class.
+        - **ML anomaly percentile:** relative rank against the held-out non-candidate tree-cover calibration distribution; it is not a probability or supervised class.
         - **ML ≥95th-percentile share:** fraction of sampled pixels in a region whose anomaly percentile is at least 95.
         - **Map markers:** centroid points only. Use the notebook's GeoJSON export to inspect candidate-region geometries.
         """
