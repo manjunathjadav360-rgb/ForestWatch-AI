@@ -18,7 +18,7 @@ The main working workflow is in [`notebooks/forestwatch_pipeline_v2.ipynb`](note
 5. Intersect persistent candidates with ESA WorldCover 2021 tree-cover class 10.
 6. Group connected pixels into regions (minimum mapped area 0.1 ha) and measure regional optical/radar evidence.
 7. Rank the 20 largest tree-cover-overlap regions for review.
-8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask using seven optical/radar features; score pixels in those 20 regions and create a separate ML priority order.
+8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask, using a held-out calibration split using seven optical/radar features; score pixels in those 20 regions and create a separate ML priority order.
 9. Cross-check the ML-ranked shortlist with Hansen Global Forest Change 2025 v1.13.
 10. Export the top 20 regions, ML scores and Hansen fields as CSV and GeoJSON to Google Drive.
 
