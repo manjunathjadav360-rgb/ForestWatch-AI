@@ -38,6 +38,8 @@ def test_isolation_forest_scores_candidate_region_samples():
 
     scores = score_region_samples(model, candidates)
 
+    assert model["training_sample_count"] == 375
+    assert model["calibration_sample_count"] == 125
     assert set(scores) == {"normal-region", "anomalous-region"}
     assert scores["anomalous-region"]["ml_sample_count"] == 20
     assert scores["anomalous-region"]["ml_anomaly_percentile_median"] > (
