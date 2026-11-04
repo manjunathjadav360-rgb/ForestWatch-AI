@@ -3,7 +3,7 @@
 **Neural Storm 2026 · GP-04 — Illegal Deforestation Detection**  
 **Pilot geography:** Western Ghats, India
 
-ForestWatch AI is an evidence-first satellite screening prototype. It combines seasonally comparable Sentinel-2 vegetation observations, Sentinel-1 radar context, a historical tree-cover reference and a separate forest-loss cross-check to produce a shortlist of locations for human review.
+ForestWatch AI is an evidence-first, unsupervised-ML-enabled satellite screening prototype. It combines seasonally comparable Sentinel-2 vegetation observations, Sentinel-1 radar context, a historical tree-cover reference and a separate forest-loss cross-check to produce a shortlist of locations for human review.
 
 > **Important:** A candidate flag is not confirmation of deforestation, natural-forest loss or illegal activity. Satellite change can result from harvesting, fire, storms, landslides, disease, seasonal effects or other land management. The system does not identify a responsible party or make legal conclusions.
 
@@ -17,8 +17,10 @@ The main working workflow is in [`notebooks/forestwatch_pipeline_v2.ipynb`](note
 4. Add Sentinel-1 VV/VH radar observations as complementary context.
 5. Intersect persistent candidates with ESA WorldCover 2021 tree-cover class 10.
 6. Group connected pixels into regions (minimum mapped area 0.1 ha) and measure regional optical/radar evidence.
-7. Cross-check the 20 highest-ranked regions with Hansen Global Forest Change 2025 v1.13.
-8. Export the top 20 regions as CSV and GeoJSON to Google Drive.
+7. Rank the 20 largest tree-cover-overlap regions for review.
+8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random pilot-AOI pixels using seven optical/radar features; score pixels in those 20 regions and create a separate ML priority order.
+9. Cross-check the ML-ranked shortlist with Hansen Global Forest Change 2025 v1.13.
+10. Export the top 20 regions, ML scores and Hansen fields as CSV and GeoJSON to Google Drive.
 
 ## Pilot run: observed outputs
 
@@ -59,7 +61,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 13 in the sidebar to replace that snapshot.
 
-The dashboard supports a largest-`N` shortlist filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When an enriched Section 13 file is uploaded, the table and cross-check panel also show Hansen historical canopy, annual loss-pixel shares and approximate loss-pixel area. Marker locations are centroids, not polygon boundaries.
+The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it orders the 20-region shortlist by the unsupervised ML priority rank and displays median anomaly percentiles, high-anomaly pixel shares and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
 
 Run locally:
 
@@ -68,9 +70,9 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-To use the latest run, upload `forestwatch_top20_candidates_with_hansen.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. This updated export includes Section 12 Hansen cross-check fields. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
+To use the latest run, execute notebook Sections 12–14, then upload `forestwatch_top20_candidates_with_hansen.csv` from the `ForestWatchAI` Google Drive folder using the dashboard sidebar. Section 12 adds ML anomaly fields; Section 13 adds Hansen cross-check fields; Section 14 exports both. The candidate-area metric is the sum of the displayed shortlist regions only, not the total pilot candidate area or confirmed deforested area. Use the GeoJSON export separately in a GIS viewer to inspect polygon geometries.
 
-**Hansen cross-check status:** The committed dashboard snapshot is a recorded Section 11 shortlist and does not contain Hansen values. The updated Section 13 export includes the Section 12 Hansen fields; upload `forestwatch_top20_candidates_with_hansen.csv` to display the independent cross-check in the dashboard. These are approximate loss-pixel intersections, not confirmed forest loss.
+**ML and Hansen status:** The committed dashboard snapshot is a recorded Section 11 shortlist and does not contain ML or Hansen values. The updated Section 14 export includes Section 12 ML anomaly scores and Section 13 Hansen fields; upload `forestwatch_top20_candidates_with_hansen.csv` to display both. Anomaly percentiles are relative rankings, not probabilities. Hansen loss-pixel intersections are approximate cross-checks, not confirmed forest loss.
 
 ## Judge demo
 
@@ -86,11 +88,11 @@ Use [`docs/run_record_template.md`](docs/run_record_template.md) to record each 
 
 ## Automated repository checks
 
-A GitHub Actions workflow runs a Streamlit dashboard startup smoke test, checks dashboard Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates, descending area order and radar-share ranges.
+A GitHub Actions workflow runs dashboard startup tests and ML unit tests, checks dashboard and ML-module Python syntax, parses every notebook Python code cell, and validates the committed 20-row pilot CSV structure, required fields, numeric values, coordinates, descending area order and radar-share ranges.
 
 ## Evaluation status
 
-This prototype has produced candidate regions and supporting indicators, but it has **not** been evaluated against a verified ground-truth dataset. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A proper evaluation requires independent reference labels and a geographically and temporally representative test set.
+The prototype now includes an **unsupervised Isolation Forest anomaly-ranking stage**. It is fitted to a reproducible random sample of optical/radar feature vectors from the pilot AOI and scores pixels inside the 20 largest area-ranked regions. The displayed anomaly percentile is relative to that sampled AOI reference distribution; it is not a probability, supervised class or proof of disturbance. The model has **not** been evaluated against verified ground-truth labels. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A supervised evaluation requires independent reference labels and a geographically and temporally representative held-out test set.
 
 ## Limitations and responsible interpretation
 
@@ -105,7 +107,7 @@ This prototype has produced candidate regions and supporting indicators, but it 
 
 ## Tools and assistance
 
-Python, Google Colab, Google Earth Engine, Sentinel-2, Sentinel-1, ESA WorldCover and Hansen Global Forest Change are used in the current notebook workflow. ChatGPT assisted with planning, code development, debugging and documentation; reported outputs are taken from the development run rather than presented as independently audited results.
+Python, scikit-learn, Google Colab, Google Earth Engine, Sentinel-2, Sentinel-1, ESA WorldCover and Hansen Global Forest Change are used in the current workflow. ChatGPT assisted with planning, code development, debugging and documentation; reported outputs are taken from the development run rather than presented as independently audited results.
 
 ## Repository layout
 
@@ -122,6 +124,10 @@ ForestWatch-AI/
 ├── notebooks/
 │   └── forestwatch_pipeline_v2.ipynb
 ├── app.py
+├── forestwatch_ml.py
 ├── requirements.txt
+├── tests/
+│   ├── test_dashboard.py
+│   └── test_forestwatch_ml.py
 └── README.md
 ```
