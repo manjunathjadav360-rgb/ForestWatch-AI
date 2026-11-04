@@ -32,8 +32,8 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r requirements.txt
       - name: Install test runner
         run: python -m pip install --disable-pip-version-check pytest
-      - name: Run dashboard startup smoke test
-        run: pytest -q
+      - name: Run dashboard and ML test suite
+        run: python -m pytest -q
       - name: Check dashboard and notebook Python syntax
         run: |
           python -m py_compile app.py forestwatch_ml.py
