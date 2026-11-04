@@ -18,7 +18,7 @@ The main working workflow is in [`notebooks/forestwatch_pipeline_v2.ipynb`](note
 5. Intersect persistent candidates with ESA WorldCover 2021 tree-cover class 10.
 6. Group connected pixels into regions (minimum mapped area 0.1 ha) and measure regional optical/radar evidence.
 7. Rank the 20 largest tree-cover-overlap regions for review.
-8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random pilot-AOI pixels using seven optical/radar features; score pixels in those 20 regions and create a separate ML priority order.
+8. Fit a StandardScaler + Isolation Forest model on up to 8,000 random valid 2021 tree-cover pixels outside the persistent-candidate mask using seven optical/radar features; score pixels in those 20 regions and create a separate ML priority order.
 9. Cross-check the ML-ranked shortlist with Hansen Global Forest Change 2025 v1.13.
 10. Export the top 20 regions, ML scores and Hansen fields as CSV and GeoJSON to Google Drive.
 
@@ -92,7 +92,7 @@ A GitHub Actions workflow runs dashboard startup tests and ML unit tests, checks
 
 ## Evaluation status
 
-The prototype now includes an **unsupervised Isolation Forest anomaly-ranking stage**. It is fitted to a reproducible random sample of optical/radar feature vectors from the pilot AOI and scores pixels inside the 20 largest area-ranked regions. The displayed anomaly percentile is relative to that sampled AOI reference distribution; it is not a probability, supervised class or proof of disturbance. The model has **not** been evaluated against verified ground-truth labels. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A supervised evaluation requires independent reference labels and a geographically and temporally representative held-out test set.
+The prototype now includes an **unsupervised Isolation Forest anomaly-ranking stage**. It is fitted to a reproducible random sample of valid 2021 tree-cover optical/radar feature vectors outside the persistent-candidate mask and scores pixels inside the 20 largest area-ranked regions. The displayed anomaly percentile is relative to that sampled AOI reference distribution; it is not a probability, supervised class or proof of disturbance. The model has **not** been evaluated against verified ground-truth labels. No precision, recall, F1-score, accuracy, false-positive rate or confirmed-illegal-event count is claimed. A supervised evaluation requires independent reference labels and a geographically and temporally representative held-out test set.
 
 ## Limitations and responsible interpretation
 
