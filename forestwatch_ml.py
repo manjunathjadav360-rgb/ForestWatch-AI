@@ -11,6 +11,7 @@ from typing import Any, Iterable, Mapping
 
 import numpy as np
 from sklearn.ensemble import IsolationForest
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -76,26 +77,34 @@ def fit_reference_model(
             f"At least 100 valid reference samples are required; got {matrix.shape[0]}."
         )
 
+    training_matrix, calibration_matrix = train_test_split(
+        matrix,
+        test_size=0.25,
+        random_state=random_state,
+        shuffle=True,
+    )
     model = make_pipeline(
         StandardScaler(),
         IsolationForest(
             n_estimators=300,
-            max_samples=min(512, matrix.shape[0]),
+            max_samples=min(512, training_matrix.shape[0]),
             contamination=contamination,
             random_state=random_state,
             n_jobs=-1,
         ),
     )
-    model.fit(matrix)
+    model.fit(training_matrix)
 
-    # Larger values are more unusual. Keep the reference distribution so
-    # candidate outputs can be expressed as relative percentiles, not chances.
-    reference_anomaly = -model.decision_function(matrix)
+    # Calibrate against held-out reference pixels that were not used to fit
+    # the scaler or Isolation Forest. Scores remain relative, not probabilities.
+    calibration_anomaly = -model.decision_function(calibration_matrix)
     return {
         "model": model,
-        "reference_anomaly_sorted": np.sort(reference_anomaly),
+        "calibration_anomaly_sorted": np.sort(calibration_anomaly),
         "feature_names": tuple(feature_names),
         "reference_sample_count": int(matrix.shape[0]),
+        "training_sample_count": int(training_matrix.shape[0]),
+        "calibration_sample_count": int(calibration_matrix.shape[0]),
         "contamination_setting": float(contamination),
     }
 
@@ -122,7 +131,7 @@ def score_region_samples(
 
     matrix = matrix[keep_indices]
     raw_anomaly = -reference_model["model"].decision_function(matrix)
-    reference_sorted = np.asarray(reference_model["reference_anomaly_sorted"])
+    reference_sorted = np.asarray(reference_model["calibration_anomaly_sorted"])
     percentiles = (
         np.searchsorted(reference_sorted, raw_anomaly, side="right")
         * 100.0
