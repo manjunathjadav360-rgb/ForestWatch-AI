@@ -40,7 +40,9 @@ Copy this file for every new Earth Engine run. Fill in values from the actual no
 - WorldCover overlap share (%):
 - Connected regions above minimum area:
 - Number of regions exported:
+- Total Section 11 candidate regions:
 - ML regions scored:
+- Regions without a valid ML sample:
 - ML priority order and median anomaly percentiles:
 - Per-region ML pixel counts:
 - Hansen top-20 regions evaluated:
