@@ -12,7 +12,7 @@ The prototype combines explicit satellite change screening with an unsupervised 
 
 ## 3. How was the ML model trained, and what does its score mean?
 
-The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid 2021 tree-cover pixels outside the persistent-candidate mask. Candidate pixels are compared with this separate reference distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the sample. No human labels are used, and the percentile is not a probability of deforestation.
+The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid 2021 tree-cover pixels outside the persistent-candidate mask. The sample is split into model-fit and held-out calibration subsets. Candidate pixels are compared with the held-out calibration score distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the sample. No human labels are used, and the percentile is not a probability of deforestation.
 
 ## 4. Which programming language did you use?
 
