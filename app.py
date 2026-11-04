@@ -312,6 +312,24 @@ if has_ml:
     ml2.metric("Regions with median ≥95th percentile", f"{ml_priority_count}/{len(view_df)}")
     ml3.metric("Candidate pixels scored", f"{ml_pixels:,}")
 
+    ml_chart = (
+        view_df[["region_id", "ml_anomaly_percentile_median"]]
+        .dropna()
+        .set_index("region_id")
+    )
+    if not ml_chart.empty:
+        st.subheader("Regional anomaly priority")
+        st.bar_chart(
+            ml_chart,
+            y="ml_anomaly_percentile_median",
+            height=260,
+            width="stretch",
+        )
+        st.caption(
+            "Higher bars indicate more unusual multi-sensor patterns relative to "
+            "the held-out non-candidate tree-cover calibration sample."
+        )
+
 with st.expander("Independent Hansen cross-check", expanded=has_hansen):
     if has_hansen:
         hansen_area = view_df["loss_area_2021_2025_ha_sum"].sum(min_count=1)
