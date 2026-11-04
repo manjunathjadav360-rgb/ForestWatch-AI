@@ -139,16 +139,67 @@ def score_region_samples(
     )
 
     grouped: dict[str, list[float]] = defaultdict(list)
-    for region_id, percentile in zip(region_ids, percentiles):
+    grouped_indices: dict[str, list[int]] = defaultdict(list)
+    for index, (region_id, percentile) in enumerate(zip(region_ids, percentiles)):
         grouped[region_id].append(float(percentile))
+        grouped_indices[region_id].append(index)
 
     results: dict[str, dict[str, float | int]] = {}
+    availability_name = "radar_observation_available"
+    support_name = "radar_support_flag"
+    availability_index = (
+        feature_names.index(availability_name)
+        if availability_name in feature_names
+        else None
+    )
+    support_index = (
+        feature_names.index(support_name)
+        if support_name in feature_names
+        else None
+    )
+
     for region_id, values in grouped.items():
         scores = np.asarray(values, dtype=np.float64)
-        results[region_id] = {
+        region_matrix = matrix[grouped_indices[region_id]]
+        metrics: dict[str, float | int] = {
             "ml_anomaly_percentile_median": round(float(np.median(scores)), 3),
             "ml_anomaly_p95_share": round(float(np.mean(scores >= 95.0)), 4),
             "ml_sample_count": int(scores.size),
         }
+
+        # Expose the feature profile beside each model score. Radar medians and
+        # support are calculated only over pixels with valid radar observations.
+        for name in (
+            "ndvi_drop_2024",
+            "ndvi_drop_2025",
+            "ndvi_change_2025_vs_2024",
+        ):
+            if name in feature_names:
+                metrics[name + "_median"] = round(
+                    float(np.median(region_matrix[:, feature_names.index(name)])),
+                    5,
+                )
+
+        if availability_index is not None:
+            radar_observed = region_matrix[:, availability_index] >= 0.5
+            metrics["ml_radar_observation_share"] = round(
+                float(np.mean(radar_observed)), 4
+            )
+            if radar_observed.any():
+                for name in ("vv_change_db", "vh_change_db"):
+                    if name in feature_names:
+                        observed_values = region_matrix[
+                            radar_observed, feature_names.index(name)
+                        ]
+                        metrics[name + "_median"] = round(
+                            float(np.median(observed_values)), 4
+                        )
+                if support_index is not None:
+                    metrics["ml_radar_support_observed_share"] = round(
+                        float(np.mean(region_matrix[radar_observed, support_index])),
+                        4,
+                    )
+
+        results[region_id] = metrics
 
     return results
