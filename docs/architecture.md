@@ -16,11 +16,11 @@ flowchart TD
     H --> K[Regional radar evidence]
     J --> L[Region-level evidence shortlist]
     K --> L
-    L --> M[Rank candidate regions by area for review]
-    M --> N[Top 20 area shortlist]
-    N --> O[AOI reference sampling: 7 optical/radar features]
-    O --> P[StandardScaler + Isolation Forest]
-    P --> Q[Relative anomaly ranking of top 20 regions]
+    L --> M[Retain original area rank for every region]
+    M --> N[Non-candidate 2021 tree-cover reference sample]
+    N --> O[StandardScaler + Isolation Forest]
+    O --> P[Score every sampleable candidate region]
+    P --> Q[Top 20 ML anomaly priorities]
     Q --> R[Hansen Global Forest Change cross-check]
     R --> S[CSV and GeoJSON exports to Google Drive]
     S --> T[Human review and independent verification]
@@ -36,7 +36,7 @@ flowchart TD
 | Sentinel-1 GRD | VV/VH radar change context | Complementary evidence; backscatter changes are not uniquely attributable |
 | ESA WorldCover 2021 | Historical tree-cover reference (class 10) | Helps screen to areas mapped as tree cover; does not prove natural forest |
 | Connected regions | Groups adjacent candidate pixels and filters tiny fragments | Creates reviewable geographic units |
-| Unsupervised ML stage | StandardScaler + Isolation Forest over seven optical/radar features, fitted to a reproducible random sample of valid 2021 tree-cover pixels outside the persistent-candidate mask, with held-out score calibration | Produces a relative anomaly percentile for sampled pixels in the 20 largest area-ranked regions; not a probability or supervised forest-loss class |
+| Unsupervised ML stage | StandardScaler + Isolation Forest over seven optical/radar features, fitted to a reproducible random sample of valid 2021 tree-cover pixels outside the persistent-candidate mask, with held-out score calibration | Produces relative anomaly percentiles for sampled pixels across all candidate regions with usable data; selects 20 priorities for cross-checking, not a probability or supervised forest-loss class |
 | Hansen Global Forest Change | Independent, coarser loss-year cross-check | Indicates mapped stand-replacement loss, not its cause or legality |
 | CSV / GeoJSON export | Makes shortlist reusable in analysis and mapping tools | Exports candidates for human review |
 
@@ -46,8 +46,8 @@ ForestWatch separates three concepts:
 
 1. **Candidate generation:** persistent optical vegetation decline in the selected seasonal windows.
 2. **Evidence context:** radar support and historical tree-cover / forest-loss references.
-3. **Initial review shortlist:** the 20 largest connected regions are selected by mapped area.
-4. **ML review priority:** an unsupervised Isolation Forest reorders those 20 using the median anomaly percentile of their sampled multi-sensor pixels across all sampleable candidate regions; the top 20 model priorities proceed to independent cross-checking. This is a relative anomaly ranking only.
+3. **Area baseline:** every connected region retains its original mapped-area rank for comparison.
+4. **ML review priority:** an unsupervised Isolation Forest scores sampled pixels across all regions with usable data, aggregates anomaly percentiles per region and selects the 20 highest anomaly priorities. This is a relative anomaly ranking only.
 5. **Independent cross-check:** Hansen loss-year values are shown separately and do not train the anomaly model.
 
 These are not a calibrated probability model. A high-ranked region is not necessarily illegal deforestation, and a low-ranked or unflagged region is not guaranteed to be unchanged.
