@@ -12,6 +12,9 @@ on:
   pull_request:
     paths:
       - "app.py"
+      - "forestwatch_ml.py"
+      - "tests/**"
+      - "requirements.txt"
       - "notebooks/**"
       - "data/forestwatch_top20_snapshot.csv"
       - ".github/workflows/validate.yml"
@@ -33,7 +36,7 @@ jobs:
         run: pytest -q
       - name: Check dashboard and notebook Python syntax
         run: |
-          python -m py_compile app.py
+          python -m py_compile app.py forestwatch_ml.py
           python - <<'PY'
           import ast
           import json
