@@ -10,7 +10,7 @@
 
 Open the deployed Streamlit dashboard.
 
-"After loading the Section 14 export, these are the 20 largest area-screened regions reordered by an unsupervised multi-sensor anomaly model. The map shows centroid locations. The table shows the model's relative anomaly percentile alongside area, optical change and radar evidence. These percentiles are not probabilities."
+"After loading the Section 14 export, these are the candidate regions ordered by an unsupervised multi-sensor anomaly model. The map shows centroid locations. The table shows the model's relative anomaly percentile alongside area, optical change and radar evidence. These percentiles are not probabilities."
 
 Point to the map and the top-five table. Explain that the markers are centroids, not mapped polygon boundaries.
 
@@ -24,7 +24,7 @@ Point to the map and the top-five table. Explain that the markers are centroids,
 
 ## 4. Independent cross-check and limitations (20 seconds)
 
-"We also fit an Isolation Forest to a random pilot-area sample using seven optical and radar features, then scored sampled pixels within the 20 largest regions. Its percentile ranks are relative anomaly measures, not event probabilities. A separate Hansen Global Forest Change cross-check provides an independent source of context. I report only values from the actual notebook run."
+"We also fit an Isolation Forest to a random pilot-area sample using seven optical and radar features, then scored sampled pixels across the connected candidate regions. Its percentile ranks are relative anomaly measures, not event probabilities. A separate Hansen Global Forest Change cross-check provides an independent source of context. I report only values from the actual notebook run."
 
 "These are screening candidates, not confirmed forest loss. Seasonal effects, fire, harvesting, storms and other disturbances can produce similar signals. Ground verification and reference labels are still needed."
 
