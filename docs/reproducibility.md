@@ -46,7 +46,7 @@ The CSV contains the top 20 regions ordered by Section 12 ML priority, including
 ## Reproducibility notes
 
 - The notebook uses Google Earth Engine datasets; results can change as source collections are updated or as data availability changes.
-- The anomaly model is unsupervised. Its reference population is sampled from valid 2021 tree-cover pixels outside the persistent-candidate mask. Its percentiles are relative to that reference distribution and are not calibrated event probabilities.
+- The anomaly model is unsupervised. Its model-fit population is sampled from valid 2021 tree-cover pixels outside the persistent-candidate mask, and a separate held-out subset calibrates the anomaly percentiles. Those percentiles are relative rankings, not event probabilities.
 - The ML stage only reorders the 20 largest regions selected by area in Section 11; it does not score all 790 connected regions.
 - The pilot AOI and seasonal windows are defined in notebook code. Record any changes to them when comparing runs.
 - Run all dependent sections in one runtime to avoid missing variables or stale server objects.
