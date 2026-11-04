@@ -8,11 +8,11 @@ Forest disturbance is difficult to review over large areas. ForestWatch creates 
 
 ## 2. What is the AI contribution?
 
-The prototype combines explicit satellite change screening with an unsupervised machine-learning stage. A StandardScaler + Isolation Forest model is fitted to a reproducible random sample of pilot-AOI pixels using seven features: NDVI drops in 2024 and 2025, 2025-vs-2024 NDVI change, Sentinel-1 VV and VH change, a radar-support flag, and a radar-availability flag. It scores pixels in the 20 largest area-ranked regions and orders those regions by median anomaly percentile. This is relative anomaly ranking, not a supervised forest-loss classification or a probability of illegal activity.
+The prototype combines explicit satellite change screening with an unsupervised machine-learning stage. A StandardScaler + Isolation Forest model is fitted to a reproducible random sample of non-candidate 2021 tree-cover pixels in the pilot AOI using seven features: NDVI drops in 2024 and 2025, 2025-vs-2024 NDVI change, Sentinel-1 VV and VH change, a radar-support flag, and a radar-availability flag. It scores pixels in the 20 largest area-ranked regions and orders those regions by median anomaly percentile. This is relative anomaly ranking, not a supervised forest-loss classification or a probability of illegal activity.
 
 ## 3. How was the ML model trained, and what does its score mean?
 
-The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid pixels across the pilot AOI. Candidate pixels are compared with that reference distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the sample. No human labels are used, and the percentile is not a probability of deforestation.
+The model is unsupervised: it learns the feature distribution from up to 8,000 randomly sampled valid 2021 tree-cover pixels outside the persistent-candidate mask. Candidate pixels are compared with this separate reference distribution. A higher percentile means a more unusual multi-sensor feature pattern relative to the sample. No human labels are used, and the percentile is not a probability of deforestation.
 
 ## 4. Which programming language did you use?
 
