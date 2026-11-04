@@ -10,7 +10,7 @@
 
 Open the deployed Streamlit dashboard.
 
-"After loading the Section 14 export, these are the candidate regions ordered by an unsupervised multi-sensor anomaly model. The map shows centroid locations. The table shows the model's relative anomaly percentile alongside area, optical change and radar evidence. These percentiles are not probabilities."
+"After loading the Section 14 export, these are the candidate regions ordered by an unsupervised multi-sensor anomaly model. The map shows centroid locations. The table shows the model's relative anomaly percentile alongside area, optical change and radar evidence. These percentiles are calibrated against a separate held-out sample of non-candidate 2021 tree-cover pixels; they are not probabilities."
 
 Point to the map and the top-five table. Explain that the markers are centroids, not mapped polygon boundaries.
 
@@ -18,9 +18,9 @@ Point to the map and the top-five table. Explain that the markers are centroids,
 
 "Our optical workflow compared seasonally aligned Sentinel-2 observations across 2023, 2024 and 2025. The persistence screen identified approximately 485.92 hectares of candidate pixels. About 413.12 hectares overlapped ESA WorldCover 2021 tree-cover class 10, or approximately 85.02% of the candidate area."
 
-"After connected-region grouping and the minimum-area filter, the tree-cover-overlap shortlist contained 790 regions of at least 0.1 hectares. We ranked them for review and exported the top 20."
+"After connected-region grouping and the minimum-area filter, the tree-cover-overlap candidate set contained 790 regions of at least 0.1 hectares. The ML stage scores regions with usable pixel samples and selects 20 anomaly priorities; their original area ranks remain visible for comparison."
 
-"The largest shortlisted region is approximately 21.45 hectares. Its mean NDVI drop indicators were 0.538 for 2024 and 0.545 for 2025. Radar support was 20.9%, while radar coverage was 100%—coverage and support are different measures."
+"The updated Section 12 output shows each ML priority beside its original area rank, candidate area, sampled-pixel count and anomaly percentile. I quote only values visible in the current run."
 
 ## 4. Independent cross-check and limitations (20 seconds)
 
