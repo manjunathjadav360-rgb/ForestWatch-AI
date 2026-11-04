@@ -26,7 +26,7 @@ Open [`notebooks/forestwatch_pipeline_v2.ipynb`](../notebooks/forestwatch_pipeli
 | 9 | Region-level evidence view | Regional evidence table |
 | 10 | ESA WorldCover tree-cover reference screen | `tree_cover_persistent_candidates` |
 | 11 | Connected-region shortlist and regional metrics | `ranked_regions`; radar support is calculated among valid radar-observed pixels, with coverage reported separately |
-| 12 | Unsupervised ML anomaly ranking | `ml_review_regions`; StandardScaler + Isolation Forest trained on up to 8,000 random AOI samples and used to reorder the 20 largest regions |
+| 12 | Unsupervised ML anomaly ranking | `ml_review_regions`; StandardScaler + Isolation Forest trained on up to 8,000 random AOI samples and used to rank all sampleable candidate regions before selecting the top 20 anomaly priorities |
 | 13 | Hansen Global Forest Change cross-check | Per-region historical canopy and 2021–2025 loss fractions, plus approximate Hansen pixel-area sums inside ML-ranked shortlist geometries |
 | 14 | CSV and GeoJSON exports | Two Earth Engine Drive export tasks containing ML and Hansen fields |
 
