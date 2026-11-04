@@ -61,7 +61,7 @@ See [docs/reproducibility.md](docs/reproducibility.md) for the detailed run orde
 
 The Streamlit dashboard opens with a recorded snapshot of the 20-region Section 11 pilot shortlist (`data/forestwatch_top20_snapshot.csv`). This lets the judge-facing view load without requiring Earth Engine authentication. Upload the latest CSV exported by Section 14 in the sidebar to replace that snapshot.
 
-The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it displays the 20 highest ML anomaly priorities, their original area ranks, median anomaly percentiles, high-anomaly pixel shares and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
+The dashboard supports a shortlist-size filter, scales centroid markers by candidate-region area, validates uploaded coordinates, positive area values and evidence-share ranges, and provides a CSV download of the currently displayed shortlist. When the enriched Section 14 file is uploaded, it displays the 20 highest ML anomaly priorities, their original area ranks, median anomaly percentiles, high-anomaly pixel shares, per-region optical/radar feature medians and Hansen cross-check fields. Marker locations are centroids, not polygon boundaries. The committed fallback snapshot remains the original Section 11 area-ranked data and does not contain ML scores.
 
 Run locally:
 
