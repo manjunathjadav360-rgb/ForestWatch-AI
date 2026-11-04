@@ -45,7 +45,7 @@ Coverage indicates the share of a region with usable radar observations. Support
 
 ## 10. Why use ESA WorldCover and Hansen Global Forest Change?
 
-WorldCover provides a historical tree-cover class reference to help focus review on areas mapped as tree cover. Hansen provides a separate, coarser loss-year reference. Section 12 sums the mapped Hansen pixel area intersecting candidate geometries and reports per-region loss-pixel fractions. These are approximate cross-check measures, not verified deforested area. Neither dataset proves natural-forest status, the cause of change or illegality.
+WorldCover provides a historical tree-cover class reference to help focus review on areas mapped as tree cover. Hansen provides a separate, coarser loss-year reference. Section 13 sums the mapped Hansen pixel area intersecting candidate geometries and reports per-region loss-pixel fractions. These are approximate cross-check measures, not verified deforested area. Neither dataset proves natural-forest status, the cause of change or illegality.
 
 ## 11. What are the model's accuracy, precision and recall?
 
@@ -76,6 +76,6 @@ The pilot covers a limited study area and uses exploratory thresholds. It has no
 - Say “candidate region” or “screening flag,” not “confirmed illegal deforestation.”
 - Say “unsupervised Isolation Forest anomaly ranking,” not “trained classifier” or “deforestation probability.”
 - The model only reorders the 20 largest area-selected regions; it has not scored all 790 regions.
-- Do not invent ML scores or Hansen values; show the actual Section 12 and 13 notebook outputs if asked.
+- Do not invent ML scores or Hansen values; show the actual Section 12 (ML) and Section 13 (Hansen) notebook outputs if asked.
 - Do not claim accuracy, precision, recall or real-time monitoring.
 - Keep each answer brief, then point to the map, table or notebook evidence.
